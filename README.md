@@ -8,16 +8,21 @@ Hi there, We're L4BC</a> 👋
 ## 💻 This purpose of this project is :
 
 - Creating P2P Protocol on top of the UDP 
+- Simulating packet loss of data
+- HTTP-like operations such as GET and POST
 
-# Custom HTTP-like P2P Protocol
-In this repository are the Python scripts that contain our custom protocol for P2P connection.
-## Installation
-Simply use the git operations:
+
+## Testing
+In order to test the protocol, two end-systems are needed. This can be done in the form of multiple VMs or two operating systems for both receiving and sending files.
+
+Initialize Git:
 ```console
 git init
+```
+Clone the repository:
+```console
 git clone https://github.com/JugBones/CompNetwork-Assignment-L4BC.git
-git pull
- ```
+```
 Now run the python scripts for the testing of the POST and GET functions
 
 
