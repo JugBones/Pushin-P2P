@@ -5,7 +5,7 @@
 Hi there, We're L4BC</a> 👋
 </h3>
 
-## 💻 This purpose of this project is :
+## 💻 The purpose of this project is :
 
 - Creating P2P Protocol on top of the UDP 
 - Simulating packet loss of data
