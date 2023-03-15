@@ -29,6 +29,6 @@ Now run the python scripts for the testing of the POST and GET functions
 ## 💼 Language & Tools :
 ![](https://img.shields.io/badge/Tools-Git-informational?style=flat&logo=Git&color=F05032)
 ![](https://img.shields.io/badge/Tools-GitHub-informational?style=flat&logo=GitHub&color=181717)
-![](https://img.shields.io/badge/Tools-Visual-Studio?style=flat&logo=VisualStudio&color=0044F9)
-![](https://img.shields.io/badge/Tools-Terminal?style=flat&logo=Terminal&color=FFFFFF)
+![](https://img.shields.io/badge/Tools-Visual-Studio?style=flat&logo=Visual Studio&color=0044F9)
+![](https://img.shields.io/badge/Tools-Windows-Terminal?style=flat&logo=Terminal&color=FFFFFF)
 >>>>>>> 1bf42520a664b9c66a4e066cdba5612aa06408dc
