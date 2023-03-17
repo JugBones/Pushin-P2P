@@ -1,5 +1,5 @@
 
-# CompNetwork-Assignment-L4BC
+# CompNetwork Assignment L4BC
 
 <h3 align="center">
 Hi there, We're L4BC</a> 👋
