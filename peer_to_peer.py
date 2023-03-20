@@ -4,12 +4,23 @@ from multiprocessing import Process
 
 
 class PeerToPeer:
-    def __init__(self, server_ip_address: str = "0.0.0.0", server_port: int = 12000):
+    """A class that represents a node it can send and receive messages from other nodes."""
+
+    def __init__(self, server_ip_address: str = "127.0.0.1", server_port: int = 12000):
+        # A class Client instance, use to send request to other nodes.
         self.__client = None
+
+        # A class Server instance, use to listen to requests from other nodes.
         self.__server = Server(server_port, server_ip_address)
+
+        # An instance of Process from multiprocessing module,
+        # use to run server instance, so it can run simultaneously along with client instance.
         self.__server_process = Process(target=self.__server.start)
 
     def start(self):
+        """
+        Start the server instance, while also sends request if user input destination IP address, Port and message. 
+        """
         self.__server_process.start()
 
         while True:
