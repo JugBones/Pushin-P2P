@@ -10,6 +10,34 @@ Hi there, We're L4BC</a> 👋
 - Simulating packet loss of data
 - HTTP-like operations such as GET and POST
 
+## Table of Contents
+- [Program Definition](#program-definition)
+- [Features](#features)
+- [Sequence Diagram](#sequence-diagram)
+- [Testing](#testing)
+
+## Program Definition
+
+## Features
+
+Although the P2P Protocol is created on top of a UDP, it will have features that are commonly observed in TCP. These features are described below.
+
+- 3-Way Handshake
+
+  Positive Acknowledgement with Retransmission (PAR), specifically SYN-ACK signals, will be used to establish a connection between peers. Using a 3-way handshake to establish a connection increases the reliability of protocol communication.
+
+- Dynamic Memory Flow
+
+  The memory of data transmissions will be changed dynamically. This allows a more extensive variety of bytes to be used in transmissions. The bytes are not limited by a fixed number stated in the code beforehand.
+
+- Packet Loss Control
+
+  In order to prevent packet loss, a timer will be used alongside ACK and NAK signals. This ensures that packets are properly received or retransmitted if necessary. This will be further demonstrated in the Sequence Diagram.
+  
+TCP features are used in this protocol to improve the reliability of its communication. UDP is said to be an unreliable protocol due to its lack of guarantee in the arrival of the data. Hence, a number of features that are observed in TCP have been implemented in this protocol to prevent that unreliability. 
+
+## Sequence Diagram
+
 ## Testing
 
 In order to test the protocol, two end-systems are needed. This can be done in the form of multiple VMs or two operating systems for both receiving and sending files.
