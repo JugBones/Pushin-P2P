@@ -54,7 +54,7 @@ class Server:
         while True:
             message, client_address = self.__receive()
             print(f"Received from {client_address}: {message}")
-            self.__send(message, client_address)
+            self.__send(message, client_address[0], client_address[1])
 
     def close(self):
         """Closing the socket connection."""
