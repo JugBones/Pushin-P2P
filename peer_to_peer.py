@@ -27,10 +27,20 @@ class PeerToPeer:
         self.__server_process.start()
         
         while True:
-            self.__client = Client()
-            destination_ip = input("Enter destination IP: ")
-            message = input("Enter message: ")
-            self.__client.send(message, destination_ip,
-                               int(self.__server_port))
-            self.__client.receive()
-            self.__client.close()
+            try:
+                print(8*"-------")
+                cmd = input('\nEnter "get", "msg" or "post" command (or "exit" to quit): \n')
+                if cmd == 'msg':
+                    self.__client = Client()
+                    destination_ip = input("Enter destination IP: ")
+                    message = input("Enter message: ")
+                    self.__client.send(message, destination_ip,
+                                    int(self.__server_port))
+                    self.__client.receive()
+                    self.__client.close()    
+                elif cmd == 'exit':
+                    break
+                else:
+                    print("INVALID STATEMENT!")
+                    break
+            except Exception as e: print(e)
