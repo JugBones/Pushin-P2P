@@ -16,19 +16,21 @@ class PeerToPeer:
         # An instance of Process from multiprocessing module,
         # use to run server instance, so it can run simultaneously along with client instance.
         self.__server_process = Process(target=self.__server.start)
+        
+        self.__server_port = server_port
+
 
     def start(self):
         """
         Start the server instance, while also sends request if user input destination IP address, Port and message. 
         """
         self.__server_process.start()
-
+        
         while True:
             self.__client = Client()
             destination_ip = input("Enter destination IP: ")
-            destination_port = input("Enter destination Port: ")
             message = input("Enter message: ")
             self.__client.send(message, destination_ip,
-                               eval(destination_port))
+                               int(self.__server_port))
             self.__client.receive()
             self.__client.close()

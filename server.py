@@ -1,7 +1,7 @@
 from socket import AF_INET, SOCK_DGRAM, socket
-
-# represent host address type tuple[IP adress, port number]
-address_type = tuple[str, int]
+from typing import Tuple
+# represent host address type Tuple[IP adress, port number]
+address_type = Tuple[str, int]
 
 
 class Server:
@@ -18,7 +18,7 @@ class Server:
         # The default is "127.0.0.1" (a loopback address also known as localhost).
         self.__ip_address = ip_address
 
-    def __receive(self, buffer_size: int = 1024) -> tuple[str, address_type]:
+    def __receive(self, buffer_size: int = 1024) -> Tuple[str, address_type]:
         """
         Receive a response from the client.
 
@@ -26,7 +26,7 @@ class Server:
             buffer_size (int): the amount of maximum bytes to be received.
 
         Returns:
-            tuple[str, address_type]: Payload from the server including the server IP address and port number.
+            Tuple[str, address_type]: Payload from the server including the server IP address and port number.
         """
         message, client_address = self.__socket.recvfrom(buffer_size)
         return (message.decode(), client_address)

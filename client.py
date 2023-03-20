@@ -1,7 +1,7 @@
 from socket import AF_INET, SOCK_DGRAM, socket
-
-# represent host address type tuple[IP adress, port number]
-address_type = tuple[str, int]
+from typing import Tuple
+# represent host address type Tuple[IP adress, port number]
+address_type = Tuple[str, int]
 
 
 class Client:
@@ -24,7 +24,7 @@ class Client:
         """
         self.__socket.sendto(data.encode(), (ip_address, port))
 
-    def receive(self, buffer_size: int = 1024) -> tuple[str, address_type]:
+    def receive(self, buffer_size: int = 1024) -> Tuple[str, address_type]:
         """
         Receive a response from the server.
 
@@ -32,7 +32,7 @@ class Client:
             buffer_size (int): the amount of maximum bytes to be received.
 
         Returns:
-            tuple[str, address_type]: Payload from the server including the server IP address and port number.
+            Tuple[str, address_type]: Payload from the server including the server IP address and port number.
         """
         message, server_address = self.__socket.recvfrom(buffer_size)
         print(f"Sending to {server_address}: {message.decode()}")
