@@ -12,7 +12,7 @@ Hi there, We're L4BC</a> 👋
 - HTTP-like operations such as GET and POST
 
 ## 💻↔💻 What is P2P Protocol ?
-__**A peer-to-peer (P2P) network**__ is a communications model in which each computing device on the network can function as either a server or a client. In a P2P network, two individuals interact directly with each other, without intermediation by a third party. P2P networks use both TCP and UDP as transport protocols, but there are some differences in each transport protocol.
+***A peer-to-peer (P2P) network*** is a communications model in which each computing device on the network can function as either a server or a client. In a P2P network, two individuals interact directly with each other, without intermediation by a third party. P2P networks use both TCP and UDP as transport protocols, but there are some differences in each transport protocol.
 
 ## Testing
 In order to test the protocol, two end-systems are needed. This can be done in the form of multiple VMs or two operating systems for both receiving and sending files.
