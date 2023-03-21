@@ -37,7 +37,28 @@ class PeerToPeer:
                     self.__client.send(message, destination_ip,
                                     int(self.__server_port))
                     self.__client.receive()
-                    self.__client.close()    
+                    self.__client.close()
+                if cmd == 'get':
+                    query = input("What do you want ?: ")
+                    self.__client.send(("I WANT " + query).encode(), ip, port)
+                    #receives 1024 bytes in socketserver
+                    while True:
+                        data, addr = self.__client.receive()
+                    if data:
+                        print("File name:", data)
+                        file_name = data.strip()
+
+                    f = open(file_name, 'wb')
+
+                    while True:
+                        ready = select.select([self.__client], [], [], timeout)
+                        if ready[0]:
+                            data, addr = self.__client.receive()
+                            f.write(data)
+                        else:
+                            print("%s Finish!", file_name)
+                            f.close()
+                            break  
                 elif cmd == 'exit':
                     break
                 else:
