@@ -65,4 +65,3 @@ Now run the python scripts for the testing of the POST and GET functions
 ![](https://img.shields.io/badge/Tools-GitHub-informational?style=flat&logo=GitHub&color=181717)
 ![](https://img.shields.io/badge/Tools-Visual-Studio?style=flat&logo=VisualStudioCode&color=0044F9)
 ![](https://img.shields.io/badge/Code-Python-informational?style=flat&logo=Python&color=FBFF00)
->>>>>>> 1bf42520a664b9c66a4e066cdba5612aa06408dc
