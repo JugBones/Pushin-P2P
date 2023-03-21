@@ -25,6 +25,9 @@ Hi there, We're L4BC</a> 👋
 ## UDP
 User Datagram Protocol (UDP) is a connectionless protocol that doesn’t require the establishment of a three-way handshake. Because it doesn't require an acknowledgement packet (ACK), it is regarded as one of the fastest protocols. Due to its fast speed, it is used to transmit data on applications that require fast transmissions like online games and video streaming services. However, since there’s no handshaking in UDP, it is unreliable, which in other words means there’s no guarantee of delivery of data transmitted.
 
+## TCP
+Transmission Control Protocol (TCP) is a core protocol of the internet protocol (IP) suite. It is responsible for establishing and maintaining reliable communication between two endpoints over an IP network. TCP provides guaranteed delivery of data by breaking it down into small packets and reassembling them at the receiver’s end, while also ensuring that they arrive in the correct order. TCP uses a three-way handshake mechanism to establish a connection between the sender and receiver, where the two parties exchange control messages to synchronize their sequence and acknowledgement numbers. Once the connection is established, TCP uses a sliding window algorithm to control the flow of data and avoid network congestion. 
+
 ## Features
 
 Although the P2P Protocol is created on top of a UDP, it will have features that are commonly observed in TCP. These features are described below.
