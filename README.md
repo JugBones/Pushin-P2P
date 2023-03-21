@@ -23,6 +23,8 @@ Hi there, We're L4BC</a> 👋
 ![image](https://user-images.githubusercontent.com/91533574/226385702-7bd4f5b1-8b47-45cd-8f50-025840e84a1e.png)
 ***A peer-to-peer (P2P) network*** is a communications model in which each computing device on the network can function as either a server or a client. In a P2P network, two individuals interact directly with each other, without intermediation by a third party. P2P networks use both TCP and UDP as transport protocols, but there are some differences in each transport protocol.
 
+![image](https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR7Eph4LztRdtPbiw0pdCSfXFz6hLcDWNA79Q&usqp=CAU)
+
 ## UDP
 User Datagram Protocol (UDP) is a connectionless protocol that doesn’t require the establishment of a three-way handshake. Because it doesn't require an acknowledgement packet (ACK), it is regarded as one of the fastest protocols. Due to its fast speed, it is used to transmit data on applications that require fast transmissions like online games and video streaming services. However, since there’s no handshaking in UDP, it is unreliable, which in other words means there’s no guarantee of delivery of data transmitted.
 
