@@ -24,7 +24,6 @@ Hi there, We're L4BC</a> 👋
 ## UDP
 User Datagram Protocol (UDP) is a connectionless protocol that doesn’t require the establishment of a three-way handshake. Because it doesn't require an acknowledgement packet (ACK), it is regarded as one of the fastest protocols. Due to its fast speed, it is used to transmit data on applications that require fast transmissions like online games and video streaming services. However, since there’s no handshaking in UDP, it is unreliable, which in other words means there’s no guarantee of delivery of data transmitted.
 
-## Program Definition
 
 ## Features
 
