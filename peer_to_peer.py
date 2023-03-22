@@ -6,7 +6,7 @@ from multiprocessing import Process
 class PeerToPeer:
     """A class that represents a node it can send and receive messages from other nodes."""
 
-    def __init__(self, server_ip_address: str = "0.0.0.0", server_port: int = 12000):
+    def __init__(self, server_ip_address: str = "0.0.0.0", server_port: int(input("Enter the port number this peer will use: "))):
         # A class Client instance, use to send request to other nodes.
         self.__client = None
 
