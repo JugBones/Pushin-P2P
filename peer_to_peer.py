@@ -1,5 +1,6 @@
 from client import Client
 from server import Server
+import select
 from multiprocessing import Process
 
 
@@ -21,6 +22,7 @@ class PeerToPeer:
 
 
     def start(self):
+
         """
         Start the server instance, while also sends request if user input destination IP address, Port and message. 
         """
@@ -28,40 +30,45 @@ class PeerToPeer:
         
         while True:
             try:
+                destination_ip = input("Enter destination IP: ")
+                destination_port = int(input("Enter destination port: "))
+
+                message = input("Enter message: ")
+
                 print(8*"-------")
                 cmd = input('\nEnter "get", "msg" or "post" command (or "exit" to quit): \n')
                 if cmd == 'msg':
                     self.__client = Client()
-                    destination_ip = input("Enter destination IP: ")
-                    message = input("Enter message: ")
                     self.__client.send(message, destination_ip,
                                     int(self.__server_port))
                     self.__client.receive()
                     self.__client.close()
                 if cmd == 'get':
                     query = input("What do you want ?: ")
-                    self.__client.send(("I WANT " + query).encode(), ip, port)
+                    self.__client.send(("I WANT " + query).encode(), destination_ip, destination_port)
                     #receives 1024 bytes in socketserver
                     while True:
+                        timeout = 5
                         data, addr = self.__client.receive()
-                    if data:
-                        print("File name:", data)
-                        file_name = data.strip()
+                        if data:
+                            print("File name:", data)
+                            file_name = data.strip()
 
-                    f = open(file_name, 'wb')
+                        f = open(file_name, 'wb')
 
-                    while True:
-                        ready = select.select([self.__client], [], [], timeout)
-                        if ready[0]:
-                            data, addr = self.__client.receive()
-                            f.write(data)
-                        else:
-                            print("%s Finish!", file_name)
-                            f.close()
-                            break  
+                        while True:
+                            ready = select.select([self.__client], [], [], timeout)
+                            if ready[0]:
+                                data, addr = self.__client.receive()
+                                f.write(data)
+                            else:
+                                print("%s Finish!", file_name)
+                                f.close()
+                                break  
                 elif cmd == 'exit':
                     break
                 else:
                     print("INVALID STATEMENT!")
                     break
             except Exception as e: print(e)
+
