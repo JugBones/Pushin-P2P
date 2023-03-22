@@ -50,6 +50,7 @@ class Server:
         Going to be used for determining the sliding window size.
         MTU = Maximum transmission unit
         MSS = Maximum segment size
+        Should be used to determine maximum packet size that should be received when using recvfrom() function of sockets
 
         Args:
             interface_name(str): takes the name of the ip connection. You can get it by doing ifconfig or ipconfig.
