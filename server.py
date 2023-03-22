@@ -1,4 +1,5 @@
 import psutil
+import re
 from socket import AF_INET, SOCK_DGRAM, socket
 from typing import Tuple
 # represent host address type Tuple[IP adress, port number]
@@ -89,7 +90,7 @@ class Server:
                 #message is the data received, it contains the actual message, client_address is the address of the client in a tuple (ip, port)
                 print(f"Connection from {client_address}")
 
-                print(f"Received {len(data)} bytes from :\n{client_address}")
+                print(f"Received {len(message)} bytes from :\n{client_address}")
 
                 #we need to decode the data to be able to read it as a string
                 #can be read as "I want (this specific html file) easy syntax to read"
