@@ -33,12 +33,11 @@ class PeerToPeer:
                 destination_ip = input("Enter destination IP: ")
                 destination_port = int(input("Enter destination port: "))
 
-                message = input("Enter message: ")
-
                 print(8*"-------")
                 cmd = input('\nEnter "get", "msg" or "post" command (or "exit" to quit): \n')
                 if cmd == 'msg':
                     self.__client = Client()
+                    message = input("Enter message: ")
                     self.__client.send(message, destination_ip,
                                     int(self.__server_port))
                     self.__client.receive()
