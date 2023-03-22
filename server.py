@@ -1,3 +1,4 @@
+import psutil
 from socket import AF_INET, SOCK_DGRAM, socket
 from typing import Tuple
 # represent host address type Tuple[IP adress, port number]
@@ -43,6 +44,33 @@ class Server:
             port (int): The port number of the client.
         """
         self.__socket.sendto(data.encode(), (ip_address, port))
+        
+    def get_mtu_and_mss(interface_name):
+        """
+        Going to be used for determining the sliding window size.
+        MTU = Maximum transmission unit
+        MSS = Maximum segment size
+
+        Args:
+            interface_name(str): takes the name of the ip connection. You can get it by doing ifconfig or ipconfig.
+            mine is "wlan0".
+            
+        Returns:
+            MTU and MSS, usually 1500 and 1460 but depends on the connection
+        """
+        if_addrs = psutil.net_if_addrs()
+        if_stats = psutil.net_if_stats()
+
+        if interface_name not in if_addrs:
+            raise ValueError(f"Interface '{interface_name}' not found")
+
+        addrs = if_addrs[interface_name]
+        stats = if_stats[interface_name]
+
+        mtu = stats.mtu
+        mss = mtu - 40  #Subtract 20 bytes for IP header and 20 bytes for TCP header
+
+        return mtu, mss
 
     def start(self):
         """
