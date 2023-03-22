@@ -69,7 +69,7 @@ class Server:
         stats = if_stats[interface_name]
 
         mtu = stats.mtu
-        mss = mtu - 40  #Subtract 20 bytes for IP header and 20 bytes for TCP header
+        mss = mtu - 40  #Subtract 20 bytes for IP header and 20 bytes for UDP header
 
         return mtu, mss
 
@@ -103,7 +103,7 @@ class Server:
                     elif message.decode().split(" ")[-1] == "sample.html":
                         f = open(r"root\sample.html")
                         file_name = re.findall(r'[^\\]+(?=\.)', r"root\sample.html")[0]
-                        UDPServerSocket.sendto(file_name.encode(), client_address)
+                        self.__socket.sendto(file_name.encode(), client_address)
                         response = f.read(1024).encode()
                         f.close()
         
@@ -125,7 +125,7 @@ class Server:
                     response = input("Enter response: ").encode()
 
                 #send the response to the client 
-                UDPServerSocket.sendto(response, client_address)
+                self.__socket.sendto(response, client_address)
 
             except Exception as e:
                 print(f"Rejected because {e}")
