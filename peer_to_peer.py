@@ -35,8 +35,8 @@ class PeerToPeer:
 
                 print(8*"-------")
                 cmd = input('\nEnter "get", "msg" or "post" command (or "exit" to quit): \n')
+                self.__client = Client()
                 if cmd == 'msg':
-                    self.__client = Client()
                     message = input("Enter message: ")
                     self.__client.send(message, destination_ip,
                                     int(self.__server_port))
@@ -44,17 +44,16 @@ class PeerToPeer:
                     self.__client.close()
                 if cmd == 'get':
                     query = input("What do you want ?: ")
-                    self.__client.send(("I WANT " + query).encode(), destination_ip, destination_port)
+                    self.__client.send(("I WANT " + query), destination_ip, destination_port)
                     #receives 1024 bytes in socketserver
                     while True:
                         timeout = 5
                         data, addr = self.__client.receive()
                         if data:
-                            print("File name:", data)
-                            file_name = data.strip()
+                            file_name = data.decode().split(" ")[-1]
+                            print("File name:", file_name)
 
                         f = open(file_name, 'wb')
-
                         while True:
                             ready = select.select([self.__client], [], [], timeout)
                             if ready[0]:
@@ -70,4 +69,5 @@ class PeerToPeer:
                     print("INVALID STATEMENT!")
                     break
             except Exception as e: print(e)
+
 
