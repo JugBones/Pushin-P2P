@@ -1,7 +1,7 @@
 import psutil
-import re
 from socket import AF_INET, SOCK_DGRAM, socket
 from typing import Tuple
+import re
 # represent host address type Tuple[IP adress, port number]
 address_type = Tuple[str, int]
 
