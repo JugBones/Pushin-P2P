@@ -82,31 +82,36 @@ class Server:
         self.__socket.bind((self.__ip_address, self.__port))
 
         while True:
+        
             message, client_address = self.__receive()
             print(f"Received from {client_address}: {message}")
             self.__send(message, client_address[0], client_address[1])
             
             try:
+
                 #message is the data received, it contains the actual message, client_address is the address of the client in a tuple (ip, port)
                 print(f"Connection from {client_address}")
 
                 print(f"Received {len(message)} bytes from :\n{client_address}")
 
                 #we need to decode the data to be able to read it as a string
-                #can be read as "I want (this specific html file) easy syntax to read"
-                if message.decode().startswith("I WANT"):
-                    if message.decode().split(" ")[-1] == "index.html":
-                        response = "NOT HTTP/1.0 9000 OKAY!\nContent-Type: text/html\n\n<html><body><h1>This is Index.html</h1></body></html>".encode()
-
-                    elif message.decode().split(" ")[-1] == "main.html":
-                        response = "NOT HTTP/1.0 9000 OKAY!\nContent-Type: text/html\n\n<html><body><h1>This is main.html</h1></body></html>".encode()
-
-                    elif message.decode().split(" ")[-1] == "sample.html":
-                        f = open(r"root\sample.html")
-                        file_name = re.findall(r'[^\\]+(?=\.)', r"root\sample.html")[0]
-                        self.__socket.sendto(file_name.encode(), client_address)
+                #can be read as "I want (this specific html file) easy syntax to read
+                if message.startswith("I WANT"):
+                    if message.split(" ")[-1] == "index.html":
+                        f = open(r"index.html")
+                        file_name = re.findall(r'[^\\]+(?=\.)', r"index.html")[0]
                         response = f.read(1024).encode()
                         f.close()
+
+                    # elif message.split(" ")[-1] == "main.html":
+                    #     response = "NOT HTTP/1.0 9000 OKAY!\nContent-Type: text/html\n\n<html><body><h1>This is main.html</h1></body></html>".encode()
+
+                    # elif message.split(" ")[-1] == "sample.html":
+                    #     f = open(r"sample.html")
+                    #     file_name = re.findall(r'[^\\]+(?=\.)', r"sample.html")[0]
+                    #     self.__socket.sendto(file_name.encode(), client_address)
+                    #     response = f.read(1024).encode()
+                    #     f.close()
         
                 #makeshift post method to send data to the server
                 elif message.startswith("PUTTING"):

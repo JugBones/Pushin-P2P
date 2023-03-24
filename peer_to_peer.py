@@ -1,6 +1,7 @@
 from client import Client
 from server import Server
 import select
+import json
 from multiprocessing import Process
 
 
@@ -36,12 +37,14 @@ class PeerToPeer:
                 print(8*"-------")
                 cmd = input('\nEnter "get", "msg" or "post" command (or "exit" to quit): \n')
                 self.__client = Client()
+                
                 if cmd == 'msg':
                     message = input("Enter message: ")
                     self.__client.send(message, destination_ip,
                                     int(self.__server_port))
                     self.__client.receive()
                     self.__client.close()
+
                 if cmd == 'get':
                     query = input("What do you want ?: ")
                     self.__client.send(("I WANT " + query), destination_ip, destination_port)
@@ -53,16 +56,25 @@ class PeerToPeer:
                             file_name = data.decode().split(" ")[-1]
                             print("File name:", file_name)
 
-                        f = open(file_name, 'wb')
                         while True:
-                            ready = select.select([self.__client], [], [], timeout)
+                            #file object uses fileno(), since on Windows, select.select won't work unless it has a fileno() method
+                            f = open(file_name, 'rb')
+                            ready = select.select([f.fileno()], [], [], timeout)
                             if ready[0]:
                                 data, addr = self.__client.receive()
-                                f.write(data)
+                                with open("requestdata.html", "a") as f:
+                                    #writing to the new requestdata.html file and decoding the data
+                                    f.write(f"{data.decode()}\n")
+                                    print("HTML FILE GOT AND SENT!!!")
+                                    f.close()
+                                    continue
+                                    
                             else:
                                 print("%s Finish!", file_name)
                                 f.close()
                                 break  
+                
+                #Post method 
                 if cmd == 'post':
                     print("=====POST=====")
                     hd = input("Enter head of message: ")
@@ -71,13 +83,14 @@ class PeerToPeer:
                     headers = '{"Content-Type":"application/json"}'
                     #no need for decoding already decoded :)
                     self.__client.send(("PUTTING" + " \n " +str(headers) + " \n " + str(payload)), destination_ip, destination_port)
-                    break
-                
+                    continue
+
                 elif cmd == 'exit':
                     break
                 else:
                     print("INVALID STATEMENT!")
-                    break
+                    continue
+
             except Exception as e: print(e)
 
 
