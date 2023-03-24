@@ -63,6 +63,16 @@ class PeerToPeer:
                                 print("%s Finish!", file_name)
                                 f.close()
                                 break  
+                if cmd == 'post':
+                    print("=====POST=====")
+                    hd = input("Enter head of message: ")
+                    msg = input("Enter content of the message: ")
+                    payload = json.dumps({"head": hd, "message": msg})
+                    headers = '{"Content-Type":"application/json"}'
+                    #no need for decoding already decoded :)
+                    self.__client.send(("PUTTING" + " \n " +str(headers) + " \n " + str(payload)), destination_ip, destination_port)
+                    break
+                
                 elif cmd == 'exit':
                     break
                 else:

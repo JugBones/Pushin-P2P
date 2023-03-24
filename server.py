@@ -109,16 +109,17 @@ class Server:
                         f.close()
         
                 #makeshift post method to send data to the server
-                elif message.decode().startswith("PUTTING"):
+                elif message.startswith("PUTTING"):
                     #split the data into parts to get the body of the message
-                    data_parts = message.decode().split("\n")
+                    data_parts = message.split("\n")
                     #takes the last part of the message containing the message after the method (PUTTING !blahblahblah!)
                     data_body = data_parts[-1]
 
                     #write the data to a file to be read by the client
                     with open("requestdata.txt", "a") as f:
-                        f.write(f"{data_body.encode()}\n")
-
+                        f.write(f"{data_body}\n")
+                    #let the user know hey its ok ur safe ur file is with me now
+                    print("JSON FILE POSTED AND PUTTED!!!")
                     response = "OK".encode()
                 else:
                     #if the message is not a get or post method, it will be instead seen as p2p messaging
