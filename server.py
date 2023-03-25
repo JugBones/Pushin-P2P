@@ -2,6 +2,7 @@ import psutil
 from socket import AF_INET, SOCK_DGRAM, socket
 from typing import Tuple
 import re
+import os
 # represent host address type Tuple[IP adress, port number]
 address_type = Tuple[str, int]
 
@@ -97,11 +98,23 @@ class Server:
                 #we need to decode the data to be able to read it as a string
                 #can be read as "I want (this specific html file) easy syntax to read
                 if message.startswith("I WANT"):
-                    if message.split(" ")[-1] == "index.html":
-                        f = open(r"index.html")
-                        file_name = re.findall(r'[^\\]+(?=\.)', r"index.html")[0]
+
+                    #getting and storing the file names into variables to create the paths
+                    file_name = message.split(" ")[-1]
+                    file_path = "./get_files/"
+
+                    #check if the requested file exists in the get_files folder
+                    is_existing = os.path.exists(file_path + file_name)
+                    if is_existing:
+                        f = open(rf"{file_path + file_name}")
+                        # file_name = re.findall(r'[^\\]+(?=\.)', r"index.html")[0]
                         response = f.read(1024).encode()
                         f.close()
+                        
+                        
+                    else:
+                        print("FILE DOES NOT EXIST! >:(")
+                        response = "NOTOK".encode()
 
                     # elif message.split(" ")[-1] == "main.html":
                     #     response = "NOT HTTP/1.0 9000 OKAY!\nContent-Type: text/html\n\n<html><body><h1>This is main.html</h1></body></html>".encode()
@@ -115,14 +128,22 @@ class Server:
         
                 #makeshift post method to send data to the server
                 elif message.startswith("PUTTING"):
+                    
+                    file_path = "./posted_files/"
+
                     #split the data into parts to get the body of the message
                     data_parts = message.split("\n")
                     #takes the last part of the message containing the message after the method (PUTTING !blahblahblah!)
                     data_body = data_parts[-1]
 
+                    #creating the file where the posted file will be stored
+                    posted_file_name = "posted_requestdata.txt"
+
                     #write the data to a file to be read by the client
-                    with open("requestdata.txt", "a") as f:
+                    with open(f"{file_path + posted_file_name}", "a") as f:
                         f.write(f"{data_body}\n")
+                        f.close()
+
                     #let the user know hey its ok ur safe ur file is with me now
                     print("JSON FILE POSTED AND PUTTED!!!")
                     response = "OK".encode()
