@@ -8,7 +8,7 @@ from multiprocessing import Process
 class PeerToPeer:
     """A class that represents a node it can send and receive messages from other nodes."""
 
-    def __init__(self, server_ip_address: str = "0.0.0.0", server_port: int = int(input("Enter the port number this peer will use: "))):
+    def __init__(self, server_ip_address: str = "0.0.0.0", server_port: int = int(input("WELCOME TO THE PROGRAM\n" +8*"-------" + "\nEnter the port number this peer will use: "))):
         # A class Client instance, use to send request to other nodes.
         self.__client = None
 
@@ -28,9 +28,13 @@ class PeerToPeer:
         Start the server instance, while also sends request if user input destination IP address, Port and message. 
         """
         self.__server_process.start()
+
+        #boolean to check if the program is still running
+        is_started= True
         
-        while True:
+        while is_started:
             try:
+                print(8*"-------")
                 destination_ip = input("Enter destination IP: ")
                 destination_port = int(input("Enter destination port: "))
 
@@ -46,37 +50,49 @@ class PeerToPeer:
                     self.__client.close()
 
                 if cmd == 'get':
+                    print("==========GET==========")
                     query = input("What do you want ?: ")
                     self.__client.send(("I WANT " + query), destination_ip, destination_port)
                     #receives 1024 bytes in socketserver
-                    while True:
+
+                    #boolean to check if the get process is still running
+                    get_in_process = True
+                    
+                    while get_in_process:
                         timeout = 5
                         data, addr = self.__client.receive()
                         if data:
                             file_name = data.decode().split(" ")[-1]
                             print("File name:", file_name)
+                        
+                        #boolean to check if the data to get still exists in this process
+                        data_exists = True
 
-                        while True:
+                        while data_exists:
                             #file object uses fileno(), since on Windows, select.select won't work unless it has a fileno() method
-                            f = open(file_name, 'rb')
+                            f = open("./get_files/"+ file_name, 'rb')
                             ready = select.select([f.fileno()], [], [], timeout)
                             if ready[0]:
                                 data, addr = self.__client.receive()
-                                with open("requestdata.html", "a") as f:
-                                    #writing to the new requestdata.html file and decoding the data
+                                received_file_name = "received_"+ file_name
+                                with open(f"./received_files/"+ received_file_name, "a") as f:
+                                    #writing to the new html file and decoding the data
                                     f.write(f"{data.decode()}\n")
-                                    print("HTML FILE GOT AND SENT!!!")
                                     f.close()
-                                    continue
+                                    print("HTML FILE GOT AND SENT!!!")
+                                    get_in_process = False
+                                    data_exists = False
+                                    
                                     
                             else:
                                 print("%s Finish!", file_name)
                                 f.close()
-                                break  
-                
+                                get_in_process = False
+                                data_exists = False
+                    continue
                 #Post method 
                 if cmd == 'post':
-                    print("=====POST=====")
+                    print("==========POST==========")
                     hd = input("Enter head of message: ")
                     msg = input("Enter content of the message: ")
                     payload = json.dumps({"head": hd, "message": msg})
@@ -86,7 +102,7 @@ class PeerToPeer:
                     continue
 
                 elif cmd == 'exit':
-                    break
+                    is_started= False
                 else:
                     print("INVALID STATEMENT!")
                     continue
