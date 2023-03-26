@@ -17,6 +17,7 @@ Hi there, We're L4BC</a> 👋
 - [TCP](#tcp)
 - [Features](#features)
 - [Sequence Diagram](#sequence-diagram)
+- [How the program works](#how-the-program-works)
 - [Testing](#testing)
 
 ## 💻↔💻 What is P2P Network ?
@@ -51,19 +52,50 @@ TCP features are used in this protocol to improve the reliability of its communi
 
 ## Sequence Diagram
 
+## How the program works
+
+The program consists of two main parts; the P2P protocol and the operations.
+
+### P2P Protocol
+The P2P protocol is responsible for establishing a connection between two devices and transmitting data between them. The protocol implemented in this program is built on top of UDP to ensure fast and reliable data transmission. With the use of socket programming, each peer has a socket that listens for incoming connections and sends data to the other peer. 
+
+The basic flow of the P2P protocol is as follows:
+- Initialization: When a user selects a method (GET, POST, or default) the program creates a new socket and sends a request to the target peer, identified by its IP address and port number. UDP socket and port number bind
+- The target peer receives the request and processes it according to the selected method.
+- Once the data is received by the requesting peer, it is displayed on the console.
+- The program handles packet loss in the channel by … 
+
+The program uses Python Socket and Multiprocessing libraries to handle incoming and outgoing connections within a single file.
+
+### GET and POST functions
+
+- GET: The target peer reads the requested HTML file from its storage medium and sends it back to the requesting peer
+- POST: The target peer stores the received JSON file in its storage medium and sends and acknowledgment message back to the requesting peer
+- If neither GET or POST is selected, then the default method is a message where the requesting peer receives a message and is prompted to input a message to be sent back to the target peer.
+
 ## Testing
+### Requirements
+- Python 3.x installed
+- Two machines (or VMs) with different IP addresses (can be obtained using the `ifcongif`/`ipconfig` command).
+
 In order to test the protocol, two end-systems are needed. This can be done in the form of multiple VMs or two operating systems for both receiving and sending files.
 
-Initialize Git:
+## Running the program
+1. Initialize Git
 ```console
 git init
 ```
-Clone the repository:
+2. Clone the repository in both machines:
 ```console
 git clone https://github.com/JugBones/CompNetwork-Assignment-L4BC.git
 ```
-Now run the python scripts for the testing of the POST and GET functions
+3. Navigate to the repository and run the program
+```console
+python .py
+```
+4. Enter your IP address and port number for the socket
 
+5. Select a method by typing GET, POST or message. 
 
 ## 💼 Language & Tools :
 ![](https://img.shields.io/badge/Tools-Git-informational?style=flat&logo=Git&color=F05032)
