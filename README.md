@@ -92,6 +92,9 @@ python .py
 
 ## Contribute
 We welcome contributions from the community to help improve our project and expand its capabilities!
+
+If you want to report a bug, feel free to [create an issue](https://github.com/JugBones/CompNetwork-Assignment-L4BC/issues) in this repository.
+
 If you have an idea or feature you'd like to contribute, please submit a pull request to the repository. The safest way is to create your own fork:
 ```bash
 # clone this repository fork
@@ -101,6 +104,3 @@ cd CompNetwork-Assignment-L4BC
 Commit changes to your own branch and push to your fork. Then finally, submit a [pull request](https://github.com/JugBones/CompNetwork-Assignment-L4BC/pulls) so that we can review your changes and eventually integrate it in the project.
 
 NOTE: Be sure to merge the latest from "upstream" before making a pull request!
-
-If you want to report a bug, feel free to [create an issue](https://github.com/JugBones/CompNetwork-Assignment-L4BC/issues) in this repository.
-
