@@ -3,6 +3,7 @@ import psutil
 import multiprocessing
 import hashlib
 import pickle
+import os
 import sys
 import time
 
@@ -80,8 +81,6 @@ def reassemble_data(received_segments, max_segment_size, data_size, seq_num_size
     #Verifying data integrity
     if combined_checksum == received_segments[-1][1][2*seq_num_size+segment_len:2*seq_num_size+segment_len+checksum_size]:
         print("Data transmission successful!")
-    else:
-        print("Data transmission failed.")
 
     return received_data
 
@@ -120,10 +119,11 @@ def receive_requests():
             elif data.decode().startswith("I WANT") and state == 1:
                 print(data.decode())
                 file_name = data.decode().split()[-1]
-                if file_name == "index.html":
-                    response = "NOT HTTP/1.0 9000 OKAY\nContent-Type: text/html\n\n<html><body><h1>This is Index.html</h1></body></html>".encode()
-                elif file_name == "main.html":
-                    response = "NOT HTTP/1.0 9000 OKAY\nContent-Type: text/html\n\n<html><body><h1>This is main.html</h1></body></html>".encode()
+                file_path = os.path.join("files", file_name)
+                if os.path.exists(file_path) and os.path.isfile(file_path):
+                    with open(file_path, "r") as f:
+                       file_content = f.read()
+                    response = ("NOT HTTP/1.0 9000 OKAY\nContent-Type: text/html\n\n" + file_content).encode()
                 else:
                     response = "File not found".encode()
                 UDPRecSocket.sendto(response, addr)
@@ -143,11 +143,13 @@ def receive_requests():
                 print("Received all segments")
                 received_data = reassemble_data(segments, mss-100, body_size)
 
-                with open(file_name, "wb") as f:
+                with open("files/" + file_name, "wb") as f:
                     f.write(received_data)
 
+                print("File saved")
+                f.close()
                 response = ("File uploaded successfully").encode()
-                UDPRecSocket.sendto(response, addr)
+                UDPRecSocket.sendto(response, (peer_ip, peer_port))
 
             else:
                 print("msg: " + data.decode())
@@ -243,6 +245,7 @@ if __name__ == '__main__':
         send_process = multiprocessing.Process(target=send_requests, args=(cmd, data, segments))
         send_process.start()
         send_process.join()
+
 
     #close sockets and terminate receive process
     UDPRecSocket.close()
