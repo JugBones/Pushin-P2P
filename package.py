@@ -1,66 +1,70 @@
-from typing import List
+from enum import Enum
 import hashlib
+import json
+
+
+# To avoid typo let's use enum
+# Add more if there is more Request Method
+class RequestMethod(Enum):
+    POST = "PUTTING"
+    GET = "I WANT"
+
+
+# Add more if there is more content type
+class ContentType(Enum):
+    APP_JSON = 'application/json'
 
 
 class Package:
-    def divide_to_chunks(package: bytes, chunk_size: int) -> List[bytes]:
+    """
+    A class represent the header and payload. 
+    """
+
+    def __init__(self, content_type: ContentType, payload: str = "", checksum: str = None, payload_length: int = 0):
+        self.__checksum = hashlib.md5(
+            payload.encode()).hexdigest() if checksum is None else checksum
+
+        self.__content_type: str = content_type.value if isinstance(
+            content_type, ContentType) else content_type
+
+        self.__payload_length = len(
+            payload) if payload_length == 0 else payload_length
+
+        self.__payload = payload
+
+    def read_json(package: str) -> "Package":
         """
-        Divide package to be sent into chunks of specified bytes
+        Static method that read package in json format and return a Package instance.
 
         Args:
-            package (bytes): package to be sent.
-            chunk_size (int): number of bytes to be divided.
+            package (str): package in json string format.
 
         Returns:
-            List[bytes]: All the divided chunks in a List
+            Package: Package class instance.
         """
-        chunks = [package[i: (i + chunk_size)]
-                  for i in range(0, len(package), chunk_size)]
-        return chunks
+        _package = json.loads(package)
+        checksum = _package["Checksum"]
+        content_type = _package["Content-Type"]
+        payload_length = _package["Payload-Length"]
+        payload = _package["Payload"]
+        return Package(payload, content_type, checksum=checksum, payload_length=payload_length)
 
-    def bundle_to_one(sorted_chunks: List[bytes]) -> bytes:
+    def verify_payload(self) -> bool:
         """
-        Merge sorted chunks into a package
-
-        Args:
-            sorted_chunks (List[bytes]): UDP segment might not be sent in order
-                                        so before putting the packages 
-                                        into the argument. please sort it first.
+        Compare checksum in the header and payload's checksum
 
         Returns:
-            bytes: Merged packages
+            bool: True if the checksum matches, False otherwise.
+                  If checksum is corrupted, it should return False.
         """
+        return self.__checksum == hashlib.md5(self.__payload.encode()).hexdigest()
 
-        return b"".join(sorted_chunks)
-
-    def verify_package(checksum: bytes, package: bytes) -> bool:
-        """
-        Verifying packages using md5
-
-        Args:
-            checksum (bytes): the digest of the package,
-            package (bytes): the package to compare against the digest.
-
-        Returns:
-            bool: True if matches and false if not matches, 
-            if the checksum is corrupted it should return False.
-        """
-        package_checksum = hashlib.md5(package).digest()
-
-        if package_checksum == checksum:
-            return True
-
-        return False
-
-    def generate_checksum(chunk: bytes) -> bytes:
-        """
-        Generate checksum to be compare to verify the integrity of the file
-
-        Args:
-            chunk (bytes): The chunk to be sent
-
-        Returns:
-            bytes: checksum using md5 hash 
-        """
-        checksum = hashlib.md5(chunk).digest()
-        return checksum
+    def __str__(self) -> str:
+        # To string method, str(<Header instance>) or print(<Header instance>)
+        # should return str represtation of header
+        return json.dumps({
+            "Checksum": self.__checksum,
+            "Content-Type": self.__content_type,
+            "Payload-Length": self.__payload_length,
+            "Payload": self.__payload
+        })
