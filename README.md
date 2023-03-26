@@ -75,15 +75,15 @@ In order to test the protocol, two end-systems are needed. This can be done in t
 
 ## Running the program
 1. Initialize Git
-```console
+```bash
 git init
 ```
 2. Clone the repository in both machines:
-```console
+```bash
 git clone https://github.com/JugBones/CompNetwork-Assignment-L4BC.git
 ```
 3. Navigate to the repository and run the program
-```console
+```bash
 python .py
 ```
 4. Enter your IP address and port number for the socket
@@ -93,7 +93,7 @@ python .py
 ## Contribute
 We welcome contributions from the community to help improve our project and expand its capabilities!
 If you have an idea or feature you'd like to contribute, please submit a pull request to the repository. The safest way is to create your own fork:
-```console
+```bash
 # clone this repository fork
 git clone https://github.com/<your_name>/CompNetwork-Assignment-L4BC
 cd CompNetwork-Assignment-L4BC
@@ -103,3 +103,4 @@ Commit changes to your own branch and push to your fork. Then finally, submit a 
 NOTE: Be sure to merge the latest from "upstream" before making a pull request!
 
 If you want to report a bug, feel free to [create an issue](https://github.com/JugBones/CompNetwork-Assignment-L4BC/issues) in this repository.
+
