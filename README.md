@@ -50,8 +50,6 @@ Although the P2P Protocol is created on top of a UDP, it will have features that
   
 TCP features are used in this protocol to improve the reliability of its communication. UDP is said to be an unreliable protocol due to its lack of guarantee in the arrival of the data. Hence, a number of features that are observed in TCP have been implemented in this protocol to prevent that unreliability. 
 
-## Sequence Diagram
-
 ## How the program works
 
 The program consists of two main parts; the P2P protocol and the operations.
@@ -72,6 +70,8 @@ The program uses Python Socket and Multiprocessing libraries to handle incoming 
 - GET: The target peer reads the requested HTML file from its storage medium and sends it back to the requesting peer
 - POST: The target peer stores the received JSON file in its storage medium and sends and acknowledgment message back to the requesting peer
 - If neither GET or POST is selected, then the default method is a message where the requesting peer receives a message and is prompted to input a message to be sent back to the target peer.
+
+## Sequence Diagram
 
 ## Testing
 ### Requirements
