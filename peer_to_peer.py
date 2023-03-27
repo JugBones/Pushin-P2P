@@ -3,6 +3,7 @@ from server import Server
 import select
 import json
 from multiprocessing import Process
+import time
 
 
 class PeerToPeer:
@@ -37,6 +38,17 @@ class PeerToPeer:
                 print(8*"-------")
                 destination_ip = input("Enter destination IP: ")
                 destination_port = int(input("Enter destination port: "))
+
+                # Three-way UDP handshake
+                self.client = Client()
+                self.client.send("SYN", destination_ip, destination_port)
+                response, addr = self.client.receive()
+                if response == "SYN-ACK":
+                    self.client.send("ACK", destination_ip, destination_port)
+                    print("UDP Handshake complete!")
+                else:
+                    print("UDP Handshake failed!")
+                    continue
 
                 print(8*"-------")
                 cmd = input('\nEnter "get", "msg" or "post" command (or "exit" to quit): \n')
