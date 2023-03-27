@@ -3,6 +3,8 @@ from socket import AF_INET, SOCK_DGRAM, socket
 from typing import Tuple
 import re
 import os
+import random
+
 # represent host address type Tuple[IP adress, port number]
 address_type = Tuple[str, int]
 
@@ -74,13 +76,14 @@ class Server:
         mss = mtu - 40  #Subtract 20 bytes for IP header and 20 bytes for UDP header
 
         return mtu, mss
-
+    
     def start(self):
         """
         Start the server by binding to the socket with the given IP address and port,
         and start listening for incoming request on the socket. Also send back responses.
         """
         self.__socket.bind((self.__ip_address, self.__port))
+        
 
         while True:
         
@@ -98,7 +101,7 @@ class Server:
                 #we need to decode the data to be able to read it as a string
                 #can be read as "I want (this specific html file) easy syntax to read
                 if message.startswith("I WANT"):
-
+                    
                     #getting and storing the file names into variables to create the paths
                     file_name = message.split(" ")[-1]
                     file_path = "./get_files/"
@@ -107,7 +110,6 @@ class Server:
                     is_existing = os.path.exists(file_path + file_name)
                     if is_existing:
                         f = open(rf"{file_path + file_name}")
-                        # file_name = re.findall(r'[^\\]+(?=\.)', r"index.html")[0]
                         response = f.read(1024).encode()
                         f.close()
                         
@@ -115,16 +117,6 @@ class Server:
                     else:
                         print("FILE DOES NOT EXIST! >:(")
                         response = "NOTOK".encode()
-
-                    # elif message.split(" ")[-1] == "main.html":
-                    #     response = "NOT HTTP/1.0 9000 OKAY!\nContent-Type: text/html\n\n<html><body><h1>This is main.html</h1></body></html>".encode()
-
-                    # elif message.split(" ")[-1] == "sample.html":
-                    #     f = open(r"sample.html")
-                    #     file_name = re.findall(r'[^\\]+(?=\.)', r"sample.html")[0]
-                    #     self.__socket.sendto(file_name.encode(), client_address)
-                    #     response = f.read(1024).encode()
-                    #     f.close()
         
                 #makeshift post method to send data to the server
                 elif message.startswith("PUTTING"):
@@ -145,15 +137,25 @@ class Server:
                         f.close()
 
                     #let the user know hey its ok ur safe ur file is with me now
-                    print("JSON FILE POSTED AND PUTTED!!!")
+                    print("JSON FILE POSTED AND PUTTED!!! :D")
                     response = "OK".encode()
-                else:
+
+                elif message.startswith("TALKING"):
                     #if the message is not a get or post method, it will be instead seen as p2p messaging
-                    print(message.decode()) 
+                    print(message) 
                     response = input("Enter response: ").encode()
+                    
+                else:
+                    print(message, "FAILED TO SEND :C")
+                    response = "NOTOK".encode()
 
                 #send the response to the client 
-                self.__socket.sendto(response, client_address)
+
+                #testing packet loss
+                # if random.random() < 1:
+                #     print("YOU DROPPED A PACKET >:(")
+                # else:
+                #     self.__socket.sendto(response, client_address)
 
             except Exception as e:
                 print(f"Rejected because {e}")

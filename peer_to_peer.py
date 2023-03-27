@@ -4,7 +4,7 @@ import select
 import json
 from multiprocessing import Process
 import time
-
+import random
 
 class PeerToPeer:
     """A class that represents a node it can send and receive messages from other nodes."""
@@ -54,20 +54,25 @@ class PeerToPeer:
                 cmd = input('\nEnter "get", "msg" or "post" command (or "exit" to quit): \n')
                 self.__client = Client()
                 
+                #message functionality is bugged
                 if cmd == 'msg':
                     message = input("Enter message: ")
-                    self.__client.send(message, destination_ip,
-                                    int(self.__server_port))
+                    self.__client.send(("TALKING " + message), destination_ip,int(self.__server_port))
                     self.__client.receive()
                     self.__client.close()
 
                 if cmd == 'get':
                     print("==========GET==========")
                     query = input("What do you want ?: ")
-                    self.__client.send(("I WANT " + query), destination_ip, destination_port)
+                    if random.random() < 0.2:
+                        print("YOU DROPPED A PACKET >:(")
+                    else:
+                        self.__client.send(("I WANT " + query), destination_ip, destination_port)
+                    
                     #receives 1024 bytes in socketserver
 
-                    #boolean to check if the get process is still running
+
+                    # #boolean to check if the get process is still running
                     get_in_process = True
                     
                     while get_in_process:
@@ -83,7 +88,7 @@ class PeerToPeer:
                         while data_exists:
                             #file object uses fileno(), since on Windows, select.select won't work unless it has a fileno() method
                             f = open("./get_files/"+ file_name, 'rb')
-                            ready = select.select([f.fileno()], [], [], timeout)
+                            ready = select.select(f.fileno(), [], [], timeout)
                             if ready[0]:
                                 data, addr = self.__client.receive()
                                 received_file_name = "received_"+ file_name
@@ -94,14 +99,13 @@ class PeerToPeer:
                                     print("HTML FILE GOT AND SENT!!!")
                                     get_in_process = False
                                     data_exists = False
-                                    
-                                    
+                                  
                             else:
                                 print("%s Finish!", file_name)
                                 f.close()
                                 get_in_process = False
                                 data_exists = False
-                    continue
+                            continue
                 #Post method 
                 if cmd == 'post':
                     print("==========POST==========")
@@ -110,8 +114,11 @@ class PeerToPeer:
                     payload = json.dumps({"head": hd, "message": msg})
                     headers = '{"Content-Type":"application/json"}'
                     #no need for decoding already decoded :)
-                    self.__client.send(("PUTTING" + " \n " +str(headers) + " \n " + str(payload)), destination_ip, destination_port)
-                    continue
+                    if random.random() < 0.2:
+                        print("YOU DROPPED A PACKET >:(")
+                    else:
+                        self.__client.send(("PUTTING" + " \n " +str(headers) + " \n " + str(payload)), destination_ip, destination_port)
+                        continue
 
                 elif cmd == 'exit':
                     is_started= False
