@@ -1,20 +1,15 @@
-# CompNetwork Assignment L4BC
+
 
 <h3 align="center">
-Hi there, We're L4BC</a> 👋
+Hi there, We're L4BC and this is our Computer Networks project</a> 👋
 </h3>
 
-## 💻 The purpose of this project is :
+## 📝 The purpose of pushin p2p is :
 
 - Creating P2P Protocol on top of the UDP
 - Simulating packet loss of data
 - HTTP-like operations such as GET and POST
 
-## Table of Contents
-- [Program Definition](#program-definition)
-- [Features](#features)
-- [Sequence Diagram](#sequence-diagram)
-- [Testing](#testing)
 
 ## Features
 
@@ -34,49 +29,4 @@ Although the P2P Protocol is created on top of a UDP, it will have features that
   
 TCP features are used in this protocol to improve the reliability of its communication. UDP is said to be an unreliable protocol due to its lack of guarantee in the arrival of the data. Hence, a number of features that are observed in TCP have been implemented in this protocol to prevent that unreliability. 
 
-## Sequence Diagram
 
-## Testing
-
-In order to test the protocol, two end-systems are needed. This can be done in the form of multiple VMs or two operating systems for both receiving and sending files.
-
-Initialize Git:
-
-```console
-git init
-```
-
-Clone the repository:
-
-```console
-git clone https://github.com/JugBones/CompNetwork-Assignment-L4BC.git
-```
-
-List branches:
-
-```console
-git branch
-```
-
-Create new branch:
-
-```console
-git branch <new_branch_name>
-```
-
-Switch branch:
-
-```console
-git switch <branch_name>
-```
-
-Now run the python scripts for the testing of the POST and GET functions
-
-## 💼 Language & Tools :
-
-![](https://img.shields.io/badge/Tools-Git-informational?style=flat&logo=Git&color=F05032)
-![](https://img.shields.io/badge/Tools-GitHub-informational?style=flat&logo=GitHub&color=181717)
-![](https://img.shields.io/badge/Tools-Visual-Studio?style=flat&logo=VisualStudioCode&color=0044F9)
-![](https://img.shields.io/badge/Code-Python-informational?style=flat&logo=Python&color=FBFF00)
-
-> > > > > > > 1bf42520a664b9c66a4e066cdba5612aa06408dc
