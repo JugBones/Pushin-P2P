@@ -72,7 +72,8 @@ The program uses Python Socket and Multiprocessing libraries to handle incoming 
 
 In order to test the protocol, two end-systems are needed. This can be done in the form of multiple VMs or two operating systems for both receiving and sending files.
 
-## Running the program
+## Downloading the Program
+### via Git
 1. Initialize Git
 ```bash
 git init
@@ -81,24 +82,30 @@ git init
 ```bash
 git clone https://github.com/JugBones/Pushin-P2P.git
 ```
-3. Navigate to the repository and run the program
+### via Github Desktop
+1. Open Github Desktop
+2. Clone repository using URL (https://github.com/JugBones/Pushin-P2P) & select the local path folder
+3. Click the 'Clone' button
+
+## Running the program
+1. Navigate to the repository and run the program
 ```bash
 python.py
 ```
-4. Enter your IP address and port number for the socket
+2. Enter your IP address and port number for the socket
 
-5. Select a method by typing GET, POST or message.
+3. Select a method by typing GET, POST or message.
 
 ## Contribute
 We welcome contributions from the community to help improve our project and expand its capabilities!
 
-If you want to report a bug, feel free to [create an issue](https://github.com/JugBones/CompNetwork-Assignment-L4BC/issues) in this repository.
+If you want to report a bug, feel free to [create an issue](https://github.com/JugBones/Pushin-P2P/issues) in this repository.
 
 If you have an idea or feature you'd like to contribute, please submit a pull request to the repository. The safest way is to create your own fork:
 ```bash
 # clone this repository fork
-git clone https://github.com/<your_name>/CompNetwork-Assignment-L4BC
+git clone https://github.com/<your_name>/Pushin-P2P
 ```
-Commit changes to your own branch and push to your fork. Then finally, submit a [pull request](https://github.com/JugBones/CompNetwork-Assignment-L4BC/pulls) so that we can review your changes and eventually integrate it in the project.
+Commit changes to your own branch and push to your fork. Then finally, submit a [pull request](https://github.com/JugBones/Pushin-P2P/pulls) so that we can review your changes and eventually integrate it in the project.
 
 NOTE: Be sure to merge the latest from "upstream" before making a pull request!
