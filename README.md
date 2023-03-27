@@ -1,11 +1,11 @@
 
-# CompNetwork Assignment L4BC
+# pushin p2p
 
 <h3 align="center">
-Hi there, We're L4BC</a> 👋
+Hi there, We're L4BC and this is our Computer Networks project</a> 👋
 </h3>
 
-## 📝 The purpose of this project is :
+## 📝 The purpose of pushin p2p is :
 
 - Creating P2P Protocol on top of the UDP 
 - Simulating packet loss of data
@@ -99,7 +99,6 @@ If you have an idea or feature you'd like to contribute, please submit a pull re
 ```bash
 # clone this repository fork
 git clone https://github.com/<your_name>/CompNetwork-Assignment-L4BC
-cd CompNetwork-Assignment-L4BC
 ```
 Commit changes to your own branch and push to your fork. Then finally, submit a [pull request](https://github.com/JugBones/CompNetwork-Assignment-L4BC/pulls) so that we can review your changes and eventually integrate it in the project.
 
