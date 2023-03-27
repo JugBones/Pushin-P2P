@@ -41,14 +41,14 @@ class PeerToPeer:
 
                 # Three-way UDP handshake
                 self.client = Client()
-                self.client.send("SYN", destination_ip, destination_port)
-                response, addr = self.client.receive()
-                if response == "SYN-ACK":
-                    self.client.send("ACK", destination_ip, destination_port)
-                    print("UDP Handshake complete!")
-                else:
-                    print("UDP Handshake failed!")
-                    continue
+                # self.client.send("SYN", destination_ip, destination_port)
+                # response, addr = self.client.receive()
+                # if response == "SYN-ACK":
+                #     self.client.send("ACK", destination_ip, destination_port)
+                #     print("UDP Handshake complete!")
+                # else:
+                #     print("UDP Handshake failed!")
+                #     continue
 
                 print(8*"-------")
                 cmd = input('\nEnter "get", "msg" or "post" command (or "exit" to quit): \n')
@@ -88,7 +88,7 @@ class PeerToPeer:
                         while data_exists:
                             #file object uses fileno(), since on Windows, select.select won't work unless it has a fileno() method
                             f = open("./get_files/"+ file_name, 'rb')
-                            ready = select.select(f.fileno(), [], [], timeout)
+                            ready = select.select([f.fileno()], [], [], timeout)
                             if ready[0]:
                                 data, addr = self.__client.receive()
                                 received_file_name = "received_"+ file_name

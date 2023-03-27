@@ -113,7 +113,6 @@ class Server:
                         response = f.read(1024).encode()
                         f.close()
                         
-                        
                     else:
                         print("FILE DOES NOT EXIST! >:(")
                         response = "NOTOK".encode()
@@ -150,13 +149,6 @@ class Server:
                     response = "NOTOK".encode()
 
                 #send the response to the client 
-
-                #testing packet loss
-                # if random.random() < 1:
-                #     print("YOU DROPPED A PACKET >:(")
-                # else:
-                #     self.__socket.sendto(response, client_address)
-
             except Exception as e:
                 print(f"Rejected because {e}")
             
