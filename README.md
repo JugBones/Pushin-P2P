@@ -84,7 +84,7 @@ git clone https://github.com/JugBones/Pushin-P2P.git
 ```
 3. Navigate to the repository and run the program
 ```bash
-python .py
+python.py
 ```
 4. Enter your IP address and port number for the socket
 
