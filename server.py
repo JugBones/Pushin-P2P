@@ -1,61 +1,165 @@
-import socket
+import psutil
+from socket import AF_INET, SOCK_DGRAM, socket
+from typing import Tuple
+import re
 import os
+# represent host address type Tuple[IP adress, port number]
+address_type = Tuple[str, int]
 
-#udp socket
-UDPServerSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-#address of server
-#your own ip address and port of choice
-ip = input("Enter ip address of server: ")
-port = int(input("Enter port number of server: "))
-server_address = (str(ip), port)
-UDPServerSocket.bind(server_address)
-print(f"Listening on {ip} port {port}")
+class Server:
+    """A class representing the server side of the connection."""
 
-#server loop to receive data
-while True:
-    #receive data from client max at 1024 bytes because of the buffer size of the socket 
-    data = UDPServerSocket.recvfrom(1024)
+    def __init__(self, port: int, ip_address: str = "127.0.0.1"):
+        # A socket object that use UDP over IPv4
+        self.__socket = socket(AF_INET, SOCK_DGRAM)
 
-    try:
-        #data[0] is the data received, it contains the actual message, data[1] is the address of the client in a tuple (ip, port)
-        print(f"Connection from {data[1]}")
+        # Port number that will be used for the connection.
+        self.__port = port
 
-        print(f"Received {len(data)} bytes from :\n{data[1]}")
+        # IP address that will be used for the connection.
+        # The default is "127.0.0.1" (a loopback address also known as localhost).
+        self.__ip_address = ip_address
 
-        #we need to decode the data to be able to read it as a string
-        #can be read as "I want (this specific html file) easy syntax to read"
-        if data[0].decode().startswith("I WANT"):
-            if data[0].decode().split(" ")[-1] == "index.html":
-                response = "NOT HTTP/1.0 9000 OKAY!\nContent-Type: text/html\n\n<html><body><h1>This is Index.html</h1></body></html>".encode()
+    def __receive(self, buffer_size: int = 1024) -> Tuple[str, address_type]:
+        """
+        Receive a response from the client.
 
-            elif data[0].decode().split(" ")[-1] == "main.html":
-                response = "NOT HTTP/1.0 9000 OKAY!\nContent-Type: text/html\n\n<html><body><h1>This is main.html</h1></body></html>".encode()
+        Args:
+            buffer_size (int): the amount of maximum bytes to be received.
+
+        Returns:
+            Tuple[str, address_type]: Payload from the server including the server IP address and port number.
+        """
+        message, client_address = self.__socket.recvfrom(buffer_size)
+        return (message.decode(), client_address)
+
+    def __send(self, data: str, ip_address: str, port: int) -> None:
+        """
+        Send a response to the client.
+
+        This function does not return anything.
+
+        Args:
+            data (str): The data to send to the client.
+            ip_address (str): The IP address of the client.
+            port (int): The port number of the client.
+        """
+        self.__socket.sendto(data.encode(), (ip_address, port))
         
-        #makeshift post method to send data to the server
-        elif data[0].decode().startswith("PUTTING"):
-            #split the data into parts to get the body of the message
-            data_parts = data[0].decode().split("\n")
-            #takes the last part of the message containing the message after the method (PUTTING !blahblahblah!)
-            data_body = data_parts[-1]
+    def get_mtu_and_mss(interface_name):
+        """
+        Going to be used for determining the sliding window size.
+        MTU = Maximum transmission unit
+        MSS = Maximum segment size
+        Should be used to determine maximum packet size that should be received when using recvfrom() function of sockets
 
-            #write the data to a file to be read by the client
-            with open("requestdata.txt", "a") as f:
-                f.write(f"{data_body.encode()}\n")
+        Args:
+            interface_name(str): takes the name of the ip connection. You can get it by doing ifconfig or ipconfig.
+            mine is "wlan0".
+            
+        Returns:
+            MTU and MSS, usually 1500 and 1460 but depends on the connection
+        """
+        if_addrs = psutil.net_if_addrs()
+        if_stats = psutil.net_if_stats()
 
-            response = "OK".encode()
-        else:
-            #if the message is not a get or post method, it will be instead seen as p2p messaging
-            print(data[0].decode()) 
-            response = input("Enter response: ").encode()
+        if interface_name not in if_addrs:
+            raise ValueError(f"Interface '{interface_name}' not found")
 
-        #send the response to the client 
-        UDPServerSocket.sendto(response, data[1])
+        addrs = if_addrs[interface_name]
+        stats = if_stats[interface_name]
 
-    except Exception as e:
-        print(f"Rejected because {e}")
+        mtu = stats.mtu
+        mss = mtu - 40  #Subtract 20 bytes for IP header and 20 bytes for UDP header
 
+        return mtu, mss
 
+    def start(self):
+        """
+        Start the server by binding to the socket with the given IP address and port,
+        and start listening for incoming request on the socket. Also send back responses.
+        """
+        self.__socket.bind((self.__ip_address, self.__port))
 
+        while True:
+        
+            message, client_address = self.__receive()
+            print(f"Received from {client_address}: {message}")
+            self.__send(message, client_address[0], client_address[1])
+            
+            try:
 
+                #message is the data received, it contains the actual message, client_address is the address of the client in a tuple (ip, port)
+                print(f"Connection from {client_address}")
+
+                print(f"Received {len(message)} bytes from :\n{client_address}")
+
+                #we need to decode the data to be able to read it as a string
+                #can be read as "I want (this specific html file) easy syntax to read
+                if message.startswith("I WANT"):
+
+                    #getting and storing the file names into variables to create the paths
+                    file_name = message.split(" ")[-1]
+                    file_path = "./get_files/"
+
+                    #check if the requested file exists in the get_files folder
+                    is_existing = os.path.exists(file_path + file_name)
+                    if is_existing:
+                        f = open(rf"{file_path + file_name}")
+                        # file_name = re.findall(r'[^\\]+(?=\.)', r"index.html")[0]
+                        response = f.read(1024).encode()
+                        f.close()
+                        
+                        
+                    else:
+                        print("FILE DOES NOT EXIST! >:(")
+                        response = "NOTOK".encode()
+
+                    # elif message.split(" ")[-1] == "main.html":
+                    #     response = "NOT HTTP/1.0 9000 OKAY!\nContent-Type: text/html\n\n<html><body><h1>This is main.html</h1></body></html>".encode()
+
+                    # elif message.split(" ")[-1] == "sample.html":
+                    #     f = open(r"sample.html")
+                    #     file_name = re.findall(r'[^\\]+(?=\.)', r"sample.html")[0]
+                    #     self.__socket.sendto(file_name.encode(), client_address)
+                    #     response = f.read(1024).encode()
+                    #     f.close()
+        
+                #makeshift post method to send data to the server
+                elif message.startswith("PUTTING"):
+                    
+                    file_path = "./posted_files/"
+
+                    #split the data into parts to get the body of the message
+                    data_parts = message.split("\n")
+                    #takes the last part of the message containing the message after the method (PUTTING !blahblahblah!)
+                    data_body = data_parts[-1]
+
+                    #creating the file where the posted file will be stored
+                    posted_file_name = "posted_requestdata.txt"
+
+                    #write the data to a file to be read by the client
+                    with open(f"{file_path + posted_file_name}", "a") as f:
+                        f.write(f"{data_body}\n")
+                        f.close()
+
+                    #let the user know hey its ok ur safe ur file is with me now
+                    print("JSON FILE POSTED AND PUTTED!!!")
+                    response = "OK".encode()
+                else:
+                    #if the message is not a get or post method, it will be instead seen as p2p messaging
+                    print(message.decode()) 
+                    response = input("Enter response: ").encode()
+
+                #send the response to the client 
+                self.__socket.sendto(response, client_address)
+
+            except Exception as e:
+                print(f"Rejected because {e}")
+            
+
+    def close(self):
+        """Closing the socket connection."""
+        self.__socket.close()
 
