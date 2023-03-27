@@ -16,8 +16,6 @@ Hi there, We're L4BC</a> 👋
 - [Sequence Diagram](#sequence-diagram)
 - [Testing](#testing)
 
-## Program Definition
-
 ## Features
 
 Although the P2P Protocol is created on top of a UDP, it will have features that are commonly observed in TCP. These features are described below.
