@@ -80,7 +80,7 @@ git init
 ```
 2. Clone the repository in both machines:
 ```bash
-git clone https://github.com/JugBones/CompNetwork-Assignment-L4BC.git
+git clone https://github.com/JugBones/Pushin-P2P.git
 ```
 3. Navigate to the repository and run the program
 ```bash
