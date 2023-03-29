@@ -1,9 +1,13 @@
 import socket
 import psutil
 import multiprocessing
+import subprocess
 import hashlib
 import pickle
 import os
+import random
+import re
+import select
 import sys
 import time
 
@@ -84,14 +88,46 @@ def reassemble_data(received_segments, max_segment_size, data_size, seq_num_size
 
     return received_data
 
+def ping(host):
+    ping_cmd = ['ping', '-c', '1', '-W', '1', host]
+    output = subprocess.run(ping_cmd, stdout=subprocess.PIPE).stdout.decode('utf-8')
+
+    rtt_match = re.search(r'rtt min/avg/max/mdev = (\d+\.\d+)/(\d+\.\d+)/(\d+\.\d+)/(\d+\.\d+) ms', output)
+
+    if rtt_match:
+        rtt = float(rtt_match.group(2))  #extract the average RTT
+        return rtt
+    else:
+        return None
+    
+def receive_datacks(num, mss, timeout, ip, port, queue):
+    temp_rec = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    temp_rec.bind((ip, port + 2))
+    temp_rec.settimeout(timeout * num)
+    missing_packets = []
+    for i in range(0, num):
+        try:
+            data, addr = temp_rec.recvfrom(mss)
+            print(data)
+        except socket.timeout:
+            missing_packets.append(i)
+            continue
+        if data.decode().startswith('DATACK'):
+            print(f"Received DATACK for segment {i}")
+    temp_rec.close()
+
+    queue.put(missing_packets)
+
+
+    
 #function to receive requests from peers
-def receive_requests():
+def receive_requests(timeout):
     global state
     segments = []
     while True:
         #receive data from peer
         if state == 0:
-             UDPRecSocket.settimeout(5) 
+             UDPRecSocket.settimeout(timeout) 
         mss = get_network_interface_info('wlan0')[1]
         try:
             data, addr = UDPRecSocket.recvfrom(mss)
@@ -113,7 +149,6 @@ def receive_requests():
                     mss = data.decode().split(" ")[-1]
                     UDPRecSocket.sendto(f"Window size: {mss}".encode(), addr)
                     print('Connection established with peer.')
-                    UDPRecSocket.settimeout(None)
                     state = 1
             #check for I WANT message
             elif data.decode().startswith("I WANT") and state == 1:
@@ -134,12 +169,15 @@ def receive_requests():
                 body_size = int(data.decode().split("-")[-2])
                 file_num = int(data.decode().split("-")[-1])
 
-                for i in range(0, file_num):
-                    print("Received " + str(i))
-                    data, addr = UDPRecSocket.recvfrom(mss)
-                    segments.append(pickle.loads(data))
+                body, addr = UDPRecSocket.recvfrom(mss)
+                while body != b"END":
+                    print(pickle.loads(body))
 
-                print(segments)
+                    print("Received " + str(pickle.loads(body)[0]))
+                    UDPRecSocket.sendto(("DATACK " + str(pickle.loads(body)[0])).encode(), (peer_ip, peer_port + 2))
+                    segments.append(pickle.loads(body))
+                    body, addr = UDPRecSocket.recvfrom(mss)
+
                 print("Received all segments")
                 received_data = reassemble_data(segments, mss-100, body_size)
 
@@ -159,12 +197,12 @@ def receive_requests():
             continue
 
 #function to send requests to peer
-def send_requests(cmd, body, segments):
+def send_requests(cmd, body, segments, timeout):
     global state
     while True:
         if state == 0:
             #set timeout for udp socket if response is not received send the syn message again
-            UDPSenSocket.settimeout(5)
+            UDPSenSocket.settimeout(timeout)
 
         mss = get_network_interface_info('wlan0')[1]
 
@@ -187,16 +225,48 @@ def send_requests(cmd, body, segments):
 
                 try:
                     state = 1
-                    UDPSenSocket.settimeout(None)
                     if cmd.startswith("PUTTING"):
                         segments = divide_data(body.encode(), mss-100)
                         cmd = cmd + "-" + str(len(body)) + "-" + str(len(segments))
                         UDPSenSocket.sendto(cmd.encode(), (peer_ip, peer_port))
 
-                        for segment in segments:
-                            print(segment)
-                            UDPSenSocket.sendto(pickle.dumps(segment), (peer_ip, peer_port))
+                        temp_queue = multiprocessing.Queue()
+                        temp_recv = multiprocessing.Process(target=receive_datacks, args=(len(segments), mss, timeout, ip, port, temp_queue))
+                        temp_recv.start()
 
+                        if len(segments) <= 1:
+                            print("Sending 0")
+                            UDPSenSocket.sendto(pickle.dumps(segments[0]), (peer_ip, peer_port))
+                            print("Sent all segments")
+                            UDPSenSocket.sendto("END".encode(), (peer_ip, peer_port))
+                        
+                        else:
+                            for segment in segments:
+                                if random.randint(0, 500) < 10:
+                                    print("Packet lost")
+                                    continue
+                                print("Sending " + str(segment[0]))
+                                UDPSenSocket.sendto(pickle.dumps(segment), (peer_ip, peer_port))
+                                
+                            temp_recv.join()
+
+                            missing_packets = temp_queue.get()
+                            if missing_packets != None:
+                                print("Missing packets: " + str(missing_packets))
+
+                            while len(missing_packets) > 0:
+                                for i in missing_packets:
+                                    print("Sending " + str(i))
+                                    UDPSenSocket.sendto(pickle.dumps(segments[i]), (peer_ip, peer_port))
+                                temp_recv.join()
+
+                                missing_packets = temp_queue.get()
+                                if len(missing_packets) == 0:
+                                    break
+                                print("Missing packets: " + str(missing_packets))
+
+                            UDPSenSocket.sendto("END".encode(), (peer_ip, peer_port))
+                            print("Sent all segments")
                     else:
                         #send command to peer
                         UDPSenSocket.sendto(cmd.encode(), (peer_ip, peer_port))
@@ -218,7 +288,7 @@ if __name__ == '__main__':
     #udp socket
     UDPRecSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     UDPSenSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    ip = "192.168.0.120"
+    ip = "10.10.10.186"
     port = int(input("Port: "))
     UDPRecSocket.bind((ip, port))
     UDPSenSocket.bind((ip, port + 1))
@@ -228,21 +298,30 @@ if __name__ == '__main__':
     segments = []
 
     #IP and port of the peer
-    peer_ip = "192.168.0.120"
+    peer_ip = "10.10.10.186"
     peer_port = int(input("Enter peer port number: "))
 
-    recv_process = multiprocessing.Process(target=receive_requests)
+    timeout_val = ping(peer_ip) * 9
+
+    recv_process = multiprocessing.Process(target=receive_requests, args=(timeout_val,))
     recv_process.start()
 
     while True:
-        cmd = input('Enter command (or "exit" to quit): ')
+        print('\nEnter command (or "exit" to quit): ', end='', flush=True)
+        rlist, _, _ = select.select([sys.stdin], [], [], 10) #Timeout after 10 seconds
+        if not rlist:
+            print("\nTimeout")
+            continue
+
+        cmd = input()
+
         if cmd == 'exit':
             break
 
         if cmd.startswith("PUTTING"):
             data = str(input())
 
-        send_process = multiprocessing.Process(target=send_requests, args=(cmd, data, segments))
+        send_process = multiprocessing.Process(target=send_requests, args=(cmd, data, segments, timeout_val))
         send_process.start()
         send_process.join()
 
