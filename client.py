@@ -1,6 +1,8 @@
 from socket import AF_INET, SOCK_DGRAM, socket
 from typing import Tuple
 from time import time
+
+import psutil
 from transport_segment import TransportSegment, HandshakeMessage
 # represent host address type Tuple[IP adress, port number]
 address_type = Tuple[str, int]
@@ -22,6 +24,8 @@ class Client:
         self.__packet_sent = 0
         self.__packet_received = 0
 
+        self.__max_transmission_unit, self.__max_segment_size = self.__get_mtu_and_mss()
+
     def send(self, data: str, ip_address: str, port: int) -> None:
         """
         Send a request to the server.
@@ -36,11 +40,35 @@ class Client:
         print(f"Sending to ({ip_address}, {port}): {data}")
         self.__socket.sendto(data.encode(), (ip_address, port))
 
+    def __get_mtu_and_mss(interface_name):
+        """
+        Going to be used for determining the sliding window size.
+        MTU = Maximum transmission unit
+        MSS = Maximum segment size
+        Should be used to determine maximum packet size that should be received when using recvfrom() function of sockets
+
+        Args:
+            interface_name(str): takes the name of the ip connection. You can get it by doing ifconfig or ipconfig.
+            mine is "wlan0".
+
+        Returns:
+            MTU and MSS, usually 1500 and 1460 but depends on the connection
+        """
+        if_addrs = psutil.net_if_addrs()
+        if_stats = psutil.net_if_stats()
+
+        if interface_name not in if_addrs:
+            raise ValueError(f"Interface '{interface_name}' not found")
+
+        addrs = if_addrs[interface_name]
+        stats = if_stats[interface_name]
+
+        mtu = stats.mtu
+        mss = mtu - 40  # Subtract 20 bytes for IP header and 20 bytes for UDP header
+
+        return mtu, mss
+
     def request_handshake(self, ip_address: str, port: int) -> bool:
-        seq_number = 1
-
-        is_corrupted = False
-
         try:
             message = ""
             while self.__number_of_retries > 0:
@@ -48,15 +76,15 @@ class Client:
                     print(
                         f"Sending Handshake request to {(ip_address, port)}...")
                     self.send(str(TransportSegment(
-                        seq_number, HandshakeMessage.SYN)), ip_address, port)
+                        0, HandshakeMessage.SYN)), ip_address, port)
 
                 if message == HandshakeMessage.SYN_ACK.value:
                     print(
                         f"Sending Acknowledgment to {(ip_address, port)}...")
                     self.send(str(TransportSegment(
-                        seq_number, HandshakeMessage.ACK)), ip_address, port)
+                        0, HandshakeMessage.ACK)), ip_address, port)
 
-                data, address = self.receive()
+                data, address = self.receive(self.__max_transmission_unit)
 
                 ts = TransportSegment.read_json(data)
 
@@ -71,6 +99,35 @@ class Client:
         except Exception as e:
             print(f"UDP Handshake failed! {e}")
             return False
+
+    def message(self, data: str, ip_address: str, port: int):
+        pass
+
+    def post(self, data: str, ip_address: str, port: int):
+        messages = TransportSegment.divide_data(
+            self.__max_segment_size, data) if (len(data.encode()) > self.__max_segment_size) else TransportSegment(1, data)
+
+        for message in messages:
+            while self.__number_of_retries > 0:
+                self.send(message, ip_address, port)
+                self.__packet_sent += 1
+                d, address = self.receive(self.__max_transmission_unit)
+                segment = TransportSegment.read_json(d)
+
+                if segment.verify_payload():
+                    self.__number_of_retries = 3
+                    self.__packet_received += 1
+                    print(
+                        f"Message received from {(ip_address, port)}: {segment.get_data()}")
+                    break
+
+        message, address = self.receive(self.__max_transmission_unit)
+        d = TransportSegment.read_json(message)
+        if d.get_data() == "Okay I received all segment":
+            self.close()
+
+    def get(self, data: str, ip_address: str, port: int):
+        pass
 
     def receive(self, buffer_size: int = 1024) -> Tuple[str, address_type]:
         """
@@ -88,4 +145,8 @@ class Client:
 
     def close(self) -> Tuple[int, int]:
         """Closing the socket connection."""
+        print(
+            f"Packet sent = {self.__packet_sent}, Packet received = {self.__packet_received}")
+        print(
+            f"Packet Loss = {self.__packet_received / (self.__packet_sent + self.__packet_received)}")
         self.__socket.close()
