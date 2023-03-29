@@ -4,6 +4,9 @@ from typing import Tuple
 import re
 import os
 import random
+from time import time
+
+from transport_segment import TransportSegment, HandshakeMessage
 
 # represent host address type Tuple[IP adress, port number]
 address_type = Tuple[str, int]
@@ -34,6 +37,7 @@ class Server:
             Tuple[str, address_type]: Payload from the server including the server IP address and port number.
         """
         message, client_address = self.__socket.recvfrom(buffer_size)
+        print(f"Received from {client_address}: {message}")
         return (message.decode(), client_address)
 
     def __send(self, data: str, ip_address: str, port: int) -> None:
@@ -47,7 +51,7 @@ class Server:
             ip_address (str): The IP address of the client.
             port (int): The port number of the client.
         """
-        print("Sending ")
+        print(f"Sending to ({ip_address, port}): {data}")
         self.__socket.sendto(data.encode(), (ip_address, port))
 
     def get_mtu_and_mss(interface_name):
@@ -87,18 +91,18 @@ class Server:
 
         while True:
 
-            message, (client_address) = self.__receive()
-            print(f"Received from {client_address}: {message}")
+            data, client_address = self.__receive()
+            print(f"Received from {client_address}: {data}")
 
-            if message == "SYN":
-                print(
-                    f"\nAcknowledge handshake request from ({client_address[0]}, {client_address[1]})")
-                self.__send("SYN-ACK", client_address[0], client_address[1])
-                continue
+            ts = TransportSegment.read_json(data)
 
-            if message == "ACK":
-                print(f"\nConnection to {client_address} established...")
-                continue
+            if ts.verify_payload():
+                message = ts.get_data()
+
+                if message == HandshakeMessage.SYN.value:
+                    self.__send(str(
+                        TransportSegment(0, HandshakeMessage.SYN_ACK)), client_address[0], client_address[1])
+                    continue
 
             print(f"Received from {client_address}: {message}")
             self.__send(message, client_address[0], client_address[1])

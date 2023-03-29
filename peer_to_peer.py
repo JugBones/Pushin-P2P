@@ -6,6 +6,8 @@ from multiprocessing import Process
 import time
 import random
 
+from transport_segment import TransportSegment, HandshakeMessage
+
 
 class PeerToPeer:
     """A class that represents a node it can send and receive messages from other nodes."""
@@ -34,13 +36,16 @@ class PeerToPeer:
 
         while is_started:
             try:
-                print(8*"-------")
-                destination_ip = input("Enter destination IP: ")
-                destination_port = int(input("Enter destination port: "))
+                connection_established = False
+                while not connection_established:
+                    print(8*"-------")
+                    destination_ip = input("Enter destination IP: ")
+                    destination_port = int(input("Enter destination port: "))
 
                 # Three-way UDP handshake
-                self.client = Client()
-                self.client.request_handshake(destination_ip, destination_port)
+                    self.client = Client()
+                    connection_established = self.client.request_handshake(
+                        destination_ip, destination_port)
 
                 # self.client.send("SYN", destination_ip, destination_port)
                 # response, addr = self.client.receive()
@@ -59,8 +64,8 @@ class PeerToPeer:
                 # message functionality is bugged
                 if cmd == 'msg':
                     message = input("Enter message: ")
-                    self.__client.send(("TALKING " + message),
-                                       destination_ip, int(self.__server_port))
+                    self.__client.send(str(TransportSegment(1, ("TALKING " + message)),
+                                       destination_ip, int(self.__server_port)))
                     self.__client.receive()
                     self.__client.close()
 
