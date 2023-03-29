@@ -47,8 +47,9 @@ class Server:
             ip_address (str): The IP address of the client.
             port (int): The port number of the client.
         """
+        print("Sending ")
         self.__socket.sendto(data.encode(), (ip_address, port))
-        
+
     def get_mtu_and_mss(interface_name):
         """
         Going to be used for determining the sliding window size.
@@ -59,7 +60,7 @@ class Server:
         Args:
             interface_name(str): takes the name of the ip connection. You can get it by doing ifconfig or ipconfig.
             mine is "wlan0".
-            
+
         Returns:
             MTU and MSS, usually 1500 and 1460 but depends on the connection
         """
@@ -73,87 +74,97 @@ class Server:
         stats = if_stats[interface_name]
 
         mtu = stats.mtu
-        mss = mtu - 40  #Subtract 20 bytes for IP header and 20 bytes for UDP header
+        mss = mtu - 40  # Subtract 20 bytes for IP header and 20 bytes for UDP header
 
         return mtu, mss
-    
+
     def start(self):
         """
         Start the server by binding to the socket with the given IP address and port,
         and start listening for incoming request on the socket. Also send back responses.
         """
         self.__socket.bind((self.__ip_address, self.__port))
-        
 
         while True:
-        
-            message, client_address = self.__receive()
+
+            message, (client_address) = self.__receive()
+            print(f"Received from {client_address}: {message}")
+
+            if message == "SYN":
+                print(
+                    f"\nAcknowledge handshake request from ({client_address[0]}, {client_address[1]})")
+                self.__send("SYN-ACK", client_address[0], client_address[1])
+                continue
+
+            if message == "ACK":
+                print(f"\nConnection to {client_address} established...")
+                continue
+
             print(f"Received from {client_address}: {message}")
             self.__send(message, client_address[0], client_address[1])
-            
+
             try:
 
-                #message is the data received, it contains the actual message, client_address is the address of the client in a tuple (ip, port)
+                # message is the data received, it contains the actual message, client_address is the address of the client in a tuple (ip, port)
                 print(f"Connection from {client_address}")
 
-                print(f"Received {len(message)} bytes from :\n{client_address}")
+                print(
+                    f"Received {len(message)} bytes from :\n{client_address}")
 
-                #we need to decode the data to be able to read it as a string
-                #can be read as "I want (this specific html file) easy syntax to read
+                # we need to decode the data to be able to read it as a string
+                # can be read as "I want (this specific html file) easy syntax to read
                 if message.startswith("I WANT"):
-                    
-                    #getting and storing the file names into variables to create the paths
+
+                    # getting and storing the file names into variables to create the paths
                     file_name = message.split(" ")[-1]
                     file_path = "./get_files/"
 
-                    #check if the requested file exists in the get_files folder
+                    # check if the requested file exists in the get_files folder
                     is_existing = os.path.exists(file_path + file_name)
                     if is_existing:
                         f = open(rf"{file_path + file_name}")
                         response = f.read(1024).encode()
                         f.close()
-                        
+
                     else:
                         print("FILE DOES NOT EXIST! >:(")
                         response = "NOTOK".encode()
-        
-                #makeshift post method to send data to the server
+
+                # makeshift post method to send data to the server
                 elif message.startswith("PUTTING"):
-                    
+
                     file_path = "./posted_files/"
 
-                    #split the data into parts to get the body of the message
+                    # split the data into parts to get the body of the message
                     data_parts = message.split("\n")
-                    #takes the last part of the message containing the message after the method (PUTTING !blahblahblah!)
+                    # takes the last part of the message containing the message after the method (PUTTING !blahblahblah!)
                     data_body = data_parts[-1]
 
-                    #creating the file where the posted file will be stored
+                    # creating the file where the posted file will be stored
                     posted_file_name = "posted_requestdata.txt"
 
-                    #write the data to a file to be read by the client
+                    # write the data to a file to be read by the client
                     with open(f"{file_path + posted_file_name}", "a") as f:
                         f.write(f"{data_body}\n")
                         f.close()
 
-                    #let the user know hey its ok ur safe ur file is with me now
+                    # let the user know hey its ok ur safe ur file is with me now
                     print("JSON FILE POSTED AND PUTTED!!! :D")
                     response = "OK".encode()
 
                 elif message.startswith("TALKING"):
-                    #if the message is not a get or post method, it will be instead seen as p2p messaging
-                    print(message) 
+                    # if the message is not a get or post method, it will be instead seen as p2p messaging
+                    print(message)
                     response = input("Enter response: ").encode()
-                    
+
                 else:
                     print(message, "FAILED TO SEND :C")
                     response = "NOTOK".encode()
 
-                #send the response to the client 
+                # send the response to the client
             except Exception as e:
                 print(f"Rejected because {e}")
-            
 
     def close(self):
         """Closing the socket connection."""
         self.__socket.close()
-

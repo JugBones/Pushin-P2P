@@ -6,10 +6,11 @@ from multiprocessing import Process
 import time
 import random
 
+
 class PeerToPeer:
     """A class that represents a node it can send and receive messages from other nodes."""
 
-    def __init__(self, server_ip_address: str = "0.0.0.0", server_port: int = int(input("WELCOME TO THE PROGRAM\n" +8*"-------" + "\nEnter the port number this peer will use: "))):
+    def __init__(self, server_ip_address: str = "0.0.0.0", server_port: int = int(input("WELCOME TO THE PROGRAM\n" + 8*"-------" + "\nEnter the port number this peer will use: "))):
         # A class Client instance, use to send request to other nodes.
         self.__client = None
 
@@ -19,20 +20,18 @@ class PeerToPeer:
         # An instance of Process from multiprocessing module,
         # use to run server instance, so it can run simultaneously along with client instance.
         self.__server_process = Process(target=self.__server.start)
-        
+
         self.__server_port = server_port
 
-
     def start(self):
-
         """
         Start the server instance, while also sends request if user input destination IP address, Port and message. 
         """
         self.__server_process.start()
 
-        #boolean to check if the program is still running
-        is_started= True
-        
+        # boolean to check if the program is still running
+        is_started = True
+
         while is_started:
             try:
                 print(8*"-------")
@@ -41,6 +40,8 @@ class PeerToPeer:
 
                 # Three-way UDP handshake
                 self.client = Client()
+                self.client.request_handshake(destination_ip, destination_port)
+
                 # self.client.send("SYN", destination_ip, destination_port)
                 # response, addr = self.client.receive()
                 # if response == "SYN-ACK":
@@ -51,13 +52,15 @@ class PeerToPeer:
                 #     continue
 
                 print(8*"-------")
-                cmd = input('\nEnter "get", "msg" or "post" command (or "exit" to quit): \n')
+                cmd = input(
+                    '\nEnter "get", "msg" or "post" command (or "exit" to quit): \n')
                 self.__client = Client()
-                
-                #message functionality is bugged
+
+                # message functionality is bugged
                 if cmd == 'msg':
                     message = input("Enter message: ")
-                    self.__client.send(("TALKING " + message), destination_ip,int(self.__server_port))
+                    self.__client.send(("TALKING " + message),
+                                       destination_ip, int(self.__server_port))
                     self.__client.receive()
                     self.__client.close()
 
@@ -67,63 +70,66 @@ class PeerToPeer:
                     if random.random() < 0.2:
                         print("YOU DROPPED A PACKET >:(")
                     else:
-                        self.__client.send(("I WANT " + query), destination_ip, destination_port)
-                    
-                    #receives 1024 bytes in socketserver
+                        self.__client.send(
+                            ("I WANT " + query), destination_ip, destination_port)
 
+                    # receives 1024 bytes in socketserver
 
                     # #boolean to check if the get process is still running
                     get_in_process = True
-                    
+
                     while get_in_process:
                         timeout = 5
                         data, addr = self.__client.receive()
                         if data:
                             file_name = data.decode().split(" ")[-1]
                             print("File name:", file_name)
-                        
-                        #boolean to check if the data to get still exists in this process
+
+                        # boolean to check if the data to get still exists in this process
                         data_exists = True
 
                         while data_exists:
-                            #file object uses fileno(), since on Windows, select.select won't work unless it has a fileno() method
-                            f = open("./get_files/"+ file_name, 'rb')
-                            ready = select.select([f.fileno()], [], [], timeout)
+                            # file object uses fileno(), since on Windows, select.select won't work unless it has a fileno() method
+                            f = open("./get_files/" + file_name, 'rb')
+                            ready = select.select(
+                                [f.fileno()], [], [], timeout)
                             if ready[0]:
                                 data, addr = self.__client.receive()
-                                received_file_name = "received_"+ file_name
-                                with open(f"./received_files/"+ received_file_name, "a") as f:
-                                    #writing to the new html file and decoding the data
+                                received_file_name = "received_" + file_name
+                                with open(f"./received_files/" + received_file_name, "a") as f:
+                                    # writing to the new html file and decoding the data
                                     f.write(f"{data.decode()}\n")
                                     f.close()
                                     print("HTML FILE GOT AND SENT!!!")
                                     get_in_process = False
                                     data_exists = False
-                                  
+
                             else:
                                 print("%s Finish!", file_name)
                                 f.close()
                                 get_in_process = False
                                 data_exists = False
                             continue
-                #Post method 
+                # Post method
                 if cmd == 'post':
                     print("==========POST==========")
                     hd = input("Enter head of message: ")
                     msg = input("Enter content of the message: ")
                     payload = json.dumps({"head": hd, "message": msg})
                     headers = '{"Content-Type":"application/json"}'
-                    #no need for decoding already decoded :)
+                    # no need for decoding already decoded :)
                     if random.random() < 0.2:
                         print("YOU DROPPED A PACKET >:(")
                     else:
-                        self.__client.send(("PUTTING" + " \n " +str(headers) + " \n " + str(payload)), destination_ip, destination_port)
+                        self.__client.send(
+                            ("PUTTING" + " \n " + str(headers) + " \n " + str(payload)), destination_ip, destination_port)
                         continue
 
                 elif cmd == 'exit':
-                    is_started= False
+                    is_started = False
                 else:
                     print("INVALID STATEMENT!")
                     continue
 
-            except Exception as e: print(e)
+            except Exception as e:
+                print(e)
