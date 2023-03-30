@@ -109,7 +109,7 @@ def receive_datacks(num, mss, queue, temp_rec):
         try:
             data, addr = temp_rec.recvfrom(mss)
             if data.decode().startswith('DATACK'):
-                datack_num = int(data.decode()[-1])
+                datack_num = int(data.decode().split()[-1])
                 print(f"Received DATACK for segment {datack_num}")
                 received_packets.add(datack_num)
         except socket.timeout:
@@ -209,7 +209,7 @@ def receive_requests(timeout):
             continue
 
 #function to send requests to peer
-def send_requests(cmd, body, segments, timeout):
+def send_requests(cmd, shared_mem, segments, timeout):
     global state
     while True:
         if state == 0:
@@ -238,8 +238,8 @@ def send_requests(cmd, body, segments, timeout):
                 try:
                     state = 1
                     if cmd.startswith("PUTTING"):
+                        body = (shared_mem.value).decode('utf-8')
                         segments = divide_data(body.encode(), mss-100)
-                        print(len(segments))
                         cmd = cmd + "-" + str(len(body)) + "-" + str(len(segments))
                         UDPSenSocket.sendto(cmd.encode(), (peer_ip, peer_port))
 
@@ -253,7 +253,7 @@ def send_requests(cmd, body, segments, timeout):
 
                         if len(segments) <= 1:
                             print("Sending 0")
-                            if random.randint(0,100) < 2:
+                            if random.randint(0,100) < 5:
                                 UDPSenSocket.sendto(pickle.dumps(segments[0]), (peer_ip, peer_port))
                             else:
                                 print("Packet lost")
@@ -281,7 +281,7 @@ def send_requests(cmd, body, segments, timeout):
                         
                         else:
                             for segment in segments:
-                                if random.randint(0, 100) < 10:
+                                if random.randint(0, 100) < 0.001:
                                     print("Packet lost")
                                     continue
                                 print("Sending " + str(segment[0]))
@@ -359,10 +359,20 @@ if __name__ == '__main__':
             break
 
         if cmd.startswith("PUTTING"):
-            data = str(input())
+            data = input()
+            shared_mem = multiprocessing.RawArray('c', data.encode('utf-8'))
 
+        if cmd.startswith("PLACING"):
+            cmd = "PUTTING-" + cmd.split("-")[1]
+            try:
+                with(open("file_to_send/" + cmd.split("-")[1], 'r')) as f:
+                    data = f.read()
+                shared_mem = multiprocessing.RawArray('c', data.encode('utf-8'))
+            except Exception as e:
+                print(f"Error: {e}")
+                continue
 
-        send_process = multiprocessing.Process(target=send_requests, args=(cmd, data, segments, timeout_val))
+        send_process = multiprocessing.Process(target=send_requests, args=(cmd, shared_mem, segments, timeout_val))
         send_process.start()
         send_process.join()
 
