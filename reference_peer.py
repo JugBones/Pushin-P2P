@@ -203,6 +203,7 @@ def receive_requests(timeout):
 
             else:
                 print("msg: " + data.decode())
+                UDPSenSocket.sendto(b'', addr)
 
         except Exception as e:
             print(f"Rejected because {e}")
@@ -353,13 +354,15 @@ if __name__ == '__main__':
             print("\nTimeout")
             continue
 
+        shared_mem = None
         cmd = input()
 
         if cmd == 'exit':
             break
 
         if cmd.startswith("PUTTING"):
-            data = input()
+            #300,000 bytes
+            data = str(input(""))
             shared_mem = multiprocessing.RawArray('c', data.encode('utf-8'))
 
         if cmd.startswith("PLACING"):
@@ -381,3 +384,4 @@ if __name__ == '__main__':
     UDPRecSocket.close()
     UDPSenSocket.close()
     recv_process.terminate()
+
