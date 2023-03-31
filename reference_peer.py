@@ -11,20 +11,19 @@ import select
 import sys
 import time
 
-def get_network_interface_info(interface_name):
+def get_network_interface_info(ip_address):
     if_addrs = psutil.net_if_addrs()
     if_stats = psutil.net_if_stats()
 
-    if interface_name not in if_addrs:
-        raise ValueError("nope")
+    for interface_name, addresses in if_addrs.items():
+        for address in addresses:
+            if address.address == ip_address:
+                stats = if_stats[interface_name]
+                mtu = stats.mtu
+                mss = mtu - 40  # Subtract 20 bytes for IP header and 20 bytes for header
+                return mtu, mss
 
-    addrs = if_addrs[interface_name]
-    stats = if_stats[interface_name]
-
-    mtu = stats.mtu
-    mss = mtu - 40  #Subtract 20 bytes for IP header and 20 bytes for header
-
-    return mtu, mss
+    raise ValueError("No network interface found for IP address {}".format(ip_address))
 
 def divide_data(data, max_segment_size, seq_num_size=9, checksum_size=16):
     """Divides data into segments with sequence numbers and checksums."""
@@ -125,14 +124,14 @@ def receive_datacks(num, mss, queue, temp_rec):
 
     
 #function to receive requests from peers
-def receive_requests(timeout):
+def receive_requests(timeout, ip):
     global state
     segments = []
     while True:
         #receive data from peer
         if state == 0:
              UDPRecSocket.settimeout(timeout) 
-        mss = get_network_interface_info('wlan0')[1]
+        mss = get_network_interface_info(ip)[1]
         try:
             data, addr = UDPRecSocket.recvfrom(mss)
         except Exception as e:
@@ -212,14 +211,14 @@ def receive_requests(timeout):
             continue
 
 #function to send requests to peer
-def send_requests(cmd, shared_mem, segments, timeout):
+def send_requests(cmd, shared_mem, segments, timeout, ip):
     global state
     while True:
         if state == 0:
             #set timeout for udp socket if response is not received send the syn message again
             UDPSenSocket.settimeout(timeout)
 
-        mss = get_network_interface_info('wlan0')[1]
+        mss = get_network_interface_info(ip)[1]
 
         if state == 0:
             #send SYN message to peer
@@ -331,7 +330,7 @@ if __name__ == '__main__':
     #udp socket
     UDPRecSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     UDPSenSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    ip = "192.168.0.120"
+    ip = str(input("Enter your IP: "))
     port = int(input("Port: "))
     UDPRecSocket.bind((ip, port))
     UDPSenSocket.bind((ip, port + 1))
@@ -341,12 +340,12 @@ if __name__ == '__main__':
     segments = []
 
     #IP and port of the peer
-    peer_ip = "192.168.0.120"
+    peer_ip = str(input("Enter the IP of the peer: "))
     peer_port = int(input("Enter peer port number: "))
 
     timeout_val = ping(peer_ip) * 9
 
-    recv_process = multiprocessing.Process(target=receive_requests, args=(timeout_val,))
+    recv_process = multiprocessing.Process(target=receive_requests, args=(timeout_val, ip))
     recv_process.start()
 
     while True:
@@ -377,7 +376,7 @@ if __name__ == '__main__':
                 print(f"Error: {e}")
                 continue
 
-        send_process = multiprocessing.Process(target=send_requests, args=(cmd, shared_mem, segments, timeout_val))
+        send_process = multiprocessing.Process(target=send_requests, args=(cmd, shared_mem, segments, timeout_val, ip))
         send_process.start()
         send_process.join()
 
