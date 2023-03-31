@@ -113,7 +113,9 @@ def receive_datacks(num, mss, queue, temp_rec):
                 print(f"Received DATACK for segment {datack_num}")
                 received_packets.add(datack_num)
         except socket.timeout:
-            break
+            missing_packets = expected_packets - received_packets
+            queue.put(missing_packets)
+            continue
     temp_rec.close()
 
     missing_packets = expected_packets - received_packets
