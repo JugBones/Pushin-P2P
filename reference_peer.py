@@ -157,7 +157,7 @@ def receive_requests(timeout, ip):
             elif data.decode().startswith("I WANT") and state == 1:
                 print(data.decode())
                 file_name = data.decode().split()[-1]
-                file_path = os.path.join("files", file_name)
+                file_path = os.path.join("get_files", file_name)
                 if os.path.exists(file_path) and os.path.isfile(file_path):
                     with open(file_path, "r") as f:
                        file_content = f.read()
@@ -194,7 +194,7 @@ def receive_requests(timeout, ip):
                 print("Received all segments")
                 received_data = reassemble_data(segments, mss-100, body_size)
 
-                with open("files/" + file_name, "wb") as f:
+                with open("received_files/" + file_name, "wb") as f:
                     f.write(received_data)
 
                 print("File saved")
@@ -369,7 +369,7 @@ if __name__ == '__main__':
         if cmd.startswith("PLACING"):
             cmd = "PUTTING-" + cmd.split("-")[1]
             try:
-                with(open("file_to_send/" + cmd.split("-")[1], 'r')) as f:
+                with(open("posted_files/" + cmd.split("-")[1], 'r')) as f:
                     data = f.read()
                 shared_mem = multiprocessing.RawArray('c', data.encode('utf-8'))
             except Exception as e:
