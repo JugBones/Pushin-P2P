@@ -24,7 +24,10 @@ class Client:
         self.__packet_sent = 0
         self.__packet_received = 0
 
-        self.__max_transmission_unit, self.__max_segment_size = self.__get_mtu_and_mss()
+        self.__max_transmission_unit = 1024
+
+        # 81 is the TransportSegment when data is empty
+        self.__max_segment_size = 1024 - 81
 
     def send(self, data: str, ip_address: str, port: int) -> None:
         """

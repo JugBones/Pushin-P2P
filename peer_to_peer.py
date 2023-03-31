@@ -43,8 +43,8 @@ class PeerToPeer:
                     destination_port = int(input("Enter destination port: "))
 
                 # Three-way UDP handshake
-                    self.client = Client()
-                    connection_established = self.client.request_handshake(
+                    self.__client = Client()
+                    connection_established = self.__client.request_handshake(
                         destination_ip, destination_port)
 
                 # self.client.send("SYN", destination_ip, destination_port)
@@ -59,13 +59,12 @@ class PeerToPeer:
                 print(8*"-------")
                 cmd = input(
                     '\nEnter "get", "msg" or "post" command (or "exit" to quit): \n')
-                self.__client = Client()
 
                 # message functionality is bugged
                 if cmd == 'msg':
                     message = input("Enter message: ")
                     self.__client.send(str(TransportSegment(1, ("TALKING " + message)),
-                                       destination_ip, int(self.__server_port)))
+                                           destination_ip, int(self.__server_port)))
                     self.__client.receive()
                     self.__client.close()
 
