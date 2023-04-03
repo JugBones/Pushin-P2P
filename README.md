@@ -72,8 +72,8 @@ The program uses Python Socket and Multiprocessing libraries to handle incoming 
 
 In order to test the protocol, two end-systems are needed. This can be done in the form of multiple VMs or two operating systems for both receiving and sending files.
 
-## Downloading the Program
-### via Git
+### Installing
+#### via Git
 1. Initialize Git
 ```bash
 git init
@@ -82,19 +82,19 @@ git init
 ```bash
 git clone https://github.com/JugBones/Pushin-P2P.git
 ```
-### via Github Desktop
+#### via Github Desktop
 1. Open Github Desktop
 2. Clone repository using URL (https://github.com/JugBones/Pushin-P2P) & select the local path folder
 3. Click the 'Clone' button
 
-### via ZIP
+#### via ZIP
 1. Click the green button with the text "Code"
 2. Click the most bottom option "Download ZIP"
 3. Save the ZIP file
 4. Extract the ZIP file
 
 
-## Running the program
+### Running the program
 1. Navigate to the repository and run the program
 ```bash
 python.py
