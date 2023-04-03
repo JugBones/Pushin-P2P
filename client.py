@@ -40,9 +40,6 @@ class Client:
         """
         self.__socket.sendto(data.encode(), (ip_address, port))
 
-    def __get_max_segment_size(self):
-        return self.__max_transmission_unit - 81
-
     def __get_mtu_and_mss(interface_name):
         """
         Going to be used for determining the sliding window size.
@@ -106,6 +103,7 @@ class Client:
         print(f"Connection to {(ip_address, port)} failed!")
         return False
 
+<<<<<<< HEAD
     def message(self, data: str, ip_address: str, port: int):
         # messages is List[str] containing data to be sent,
         # if data is larger than max segment size then it will divided into chunks
@@ -190,38 +188,34 @@ class Client:
                 continue
 
             if m.verify_payload():
-                if m.get_data() != SegmentAckMessage.FIN.value:
+                self.__packet_received += 1
+                if m.get_data() == SegmentAckMessage.NOT_FOUND.value:
+                    print("File Does not exist!")
+                    get_in_process = False
+
+                elif m.get_data() != SegmentAckMessage.FIN.value:
                     print(f"Received Segment {m.get_segment_number()}...")
                     self.__segments.append(str(m))
                     ts = TransportSegment(
                         m.get_segment_number(), SegmentAckMessage.ACK.value)
                     print(f"Sending Ack Segment {m.get_segment_number()}...")
                     self.send(str(ts), ip_address, port)
+                    self.__packet_sent += 1
 
                 elif m.get_data() == SegmentAckMessage.FIN.value:
                     print("I received all segments...")
                     get_in_process = False
                     ts = TransportSegment(
                         m.get_segment_number(), SegmentAckMessage.FIN.value)
-                    print(self.__segments)
                     s = TransportSegment.reassemble_data(self.__segments)
                     self.send(str(ts), ip_address, port)
-                    print("Writing file to local disk...")
+                    self.__packet_sent += 1
+
                     dirname = os.path.dirname(__file__)
+                    print(
+                        f"Writing file to {os.path.join(dirname, 'get_files', query)}...")
                     with open(os.path.join(dirname, "get_files", query), "w") as f:
                         f.write(s)
-
-                elif m.get_data() != SegmentAckMessage.NOT_FOUND.value:
-                    get_in_process = False
-                    print("File not found!")
-
-                else:
-                    print("All segments received...")
-                    print(f"Saving to /received_files/{query}")
-                    s = TransportSegment.reassemble_data(self.__segments)
-                    with open(f"/received_files/{query}", "rb") as f:
-                        f.write(s)
-                    get_in_process = False
 
         print("Closing socket...")
         self.close()

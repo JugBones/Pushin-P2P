@@ -101,7 +101,7 @@ class Server:
             is_existing = os.path.exists(file_path)
             if is_existing:
                 f = open(file_path)
-                response = f.read(1024)
+                response = f.read()
                 f.close()
 
                 segments = []
@@ -137,6 +137,7 @@ class Server:
                                     index + 1, SegmentAckMessage.FIN.value)
                                 self.__send(
                                     str(fin_message), client_address[0], client_address[1])
+                                self.__packet_sent += 1
                                 break
                         else:
                             print("Checksum do not match, ignoring message...")
