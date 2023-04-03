@@ -103,7 +103,6 @@ class Client:
         print(f"Connection to {(ip_address, port)} failed!")
         return False
 
-<<<<<<< HEAD
     def message(self, data: str, ip_address: str, port: int):
         # messages is List[str] containing data to be sent,
         # if data is larger than max segment size then it will divided into chunks

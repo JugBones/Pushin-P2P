@@ -49,7 +49,7 @@ class PeerToPeer:
 
             print(8*"-------")
             cmd = input(
-                '\nEnter "get", "msg" or "post" command (or "exit" to quit): \n')
+                '\nEnter "get" or "post" command (or "exit" to quit): \n')
 
             # Get method
             if cmd == 'get':

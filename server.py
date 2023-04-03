@@ -189,7 +189,7 @@ class Server:
                     self.__packet_sent += 1
 
                     try:
-                        self.__socket.settimeout(10)
+                        self.__socket.settimeout(1)
                         message, _ = self.__receive(1024)
                         ts = TransportSegment.read_json(message)
 
