@@ -39,9 +39,6 @@ class Client:
         """
         self.__socket.sendto(data.encode(), (ip_address, port))
 
-    def __get_max_segment_size(self):
-        return self.__max_transmission_unit - 81
-
     def __get_mtu_and_mss(interface_name):
         """
         Going to be used for determining the sliding window size.
@@ -105,23 +102,6 @@ class Client:
         print(f"Connection to {(ip_address, port)} failed!")
         return False
 
-    def message(self, data: str, ip_address: str, port: int):
-        # messages is List[str] containing data to be sent,
-        # if data is larger than max segment size then it will divided into chunks
-        messages = TransportSegment.divide_data(self.__get_max_segment_size(), data) if (
-            len(data.encode)) > self.__get_max_segment_size() else [str(TransportSegment(1, data))]
-
-        while self.__number_of_retries > 0:
-            segment = 1
-            self.send(messages[segment-1])
-            try:
-                data, address = self.receive(self.__max_transmission_unit)
-
-            except Exception as e:
-                self.__number_of_retries -= 1
-                self.__max_transmission_unit /= 2
-        pass
-
     def post(self, data: str, ip_address: str, port: int):
         chunks = TransportSegment.divide_data(
             self.__get_max_segment_size(), data) if (len(data.encode()) > self.__get_max_segment_size()) else [str(TransportSegment(1, data))]
@@ -183,6 +163,7 @@ class Client:
                 continue
 
             if m.verify_payload():
+                self.__packet_received += 1
                 if m.get_data() == SegmentAckMessage.NOT_FOUND.value:
                     print("File Does not exist!")
                     get_in_process = False
@@ -194,6 +175,7 @@ class Client:
                         m.get_segment_number(), SegmentAckMessage.ACK.value)
                     print(f"Sending Ack Segment {m.get_segment_number()}...")
                     self.send(str(ts), ip_address, port)
+                    self.__packet_sent += 1
 
                 elif m.get_data() == SegmentAckMessage.FIN.value:
                     print("I received all segments...")
@@ -203,6 +185,8 @@ class Client:
                     print(self.__segments)
                     s = TransportSegment.reassemble_data(self.__segments)
                     self.send(str(ts), ip_address, port)
+                    self.__packet_sent += 1
+
                     dirname = os.path.dirname(__file__)
                     print(
                         f"Writing file to {os.path.join(dirname, 'get_files', query)}...")
