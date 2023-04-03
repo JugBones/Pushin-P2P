@@ -2,6 +2,7 @@ from socket import AF_INET, SOCK_DGRAM, socket
 from typing import Tuple
 from time import time
 import os
+import json
 
 import psutil
 from transport_segment import TransportSegment, HandshakeMessage, SegmentAckMessage, RequestMessage
@@ -122,51 +123,57 @@ class Client:
                 self.__max_transmission_unit /= 2
         pass
 
-    def post(self, data: str, ip_address: str, port: int):
-        chunks = TransportSegment.divide_data(
-            self.__get_max_segment_size(), data) if (len(data.encode()) > self.__get_max_segment_size()) else [str(TransportSegment(1, data))]
+    def post(self, ip_address: str, port: int):
+        print("==========POST==========")
+        file_name = input("Enter your desired filename: ")
+        hd = input("Enter head of message: ")
+        msg = input("Enter content of the message: ")
+        payload = json.dumps({"head": hd, "message": msg})
+        headers = '{"Content-Type":"application/json"}'
+        ts = TransportSegment(0, f"{RequestMessage.POST.value}{payload}")
+        self.send(str(ts), ip_address, port)
 
-        segment = 0
+        post_in_process = True
+        while post_in_process:
+            message, address = self.receive()
+            m = TransportSegment.read_json(message)
 
-        while self.__number_of_retries > 0:
-            self.send(chunks[segment], ip_address, port)
-            try:
-                message, _ = self.receive(self.__max_transmission_unit)
-                ts = TransportSegment.read_json(message)
-                if ts.verify_payload():
-                    if ts.get_data() == SegmentAckMessage.ACK.value and segment < len(chunks) - 1:
-                        segment += 1
+            if m == None:
+                continue
 
-                    elif ts.get_data == SegmentAckMessage.ACK.value and segment == len(chunks) - 1:
-                        fin_message = TransportSegment(
-                            0, SegmentAckMessage.FIN.value)
-                        self.send(fin_message, ip_address, port)
+            if m.verify_payload():
+                if m.get_data() != SegmentAckMessage.FIN.value:
+                    print(f"Received Segment {m.get_segment_number()}...")
+                    self.__segments.append(str(m))
+                    ts = TransportSegment(
+                        m.get_segment_number(), SegmentAckMessage.ACK.value)
+                    print(f"Sending Ack Segment {m.get_segment_number()}...")
+                    self.send(str(ts), ip_address, port)
+
+                elif m.get_data() == SegmentAckMessage.FIN.value:
+                    print("I received all segments...")
+                    post_in_process = False
+                    ts = TransportSegment(
+                        m.get_segment_number(), SegmentAckMessage.FIN.value)
+                    print(self.__segments)
+                    s = TransportSegment.reassemble_data(self.__segments)
+                    self.send(str(ts), ip_address, port)
+                    print("Writing file to local disk...")
+                    dirname = os.path.dirname(__file__)
+                    with open(os.path.join(dirname, "posted_files", file_name), "w") as f:
+                        f.write(s)
+                    
                 else:
-                    self.__number_of_retries -= 1
-
-            except Exception as e:
-                self.__number_of_retries -= 1
-
-            pass
-
-        # for message in messages:
-        #     while self.__number_of_retries > 0:
-        #         self.send(message, ip_address, port)
-        #         self.__packet_sent += 1
-        #         d, address = self.receive(self.__max_transmission_unit)
-        #         segment = TransportSegment.read_json(d)
-
-        #         if segment.verify_payload():
-        #             self.__number_of_retries = 3
-        #             self.__packet_received += 1
-        #             print(
-        #                 f"Message received from {(ip_address, port)}: {segment.get_data()}")
-        #             break
-
-        # message, address = self.receive(self.__max_transmission_unit)
-        # d = TransportSegment.read_json(message)
-        # if d.get_data() == "Okay I received all segment":
-        #     self.close()
+                    print("All segments received...")
+                    print(f"Saving to /received_files/{file_name}")
+                    s = TransportSegment.reassemble_data(self.__segments)
+                    with open(f"/received_files/{file_name}", "rb") as f:
+                        f.write(s)
+                    post_in_process = False
+        
+        print("Closing socket...")
+        self.close()
+        return
 
     def get(self, ip_address: str, port: int):
         print("==========GET==========")

@@ -162,8 +162,64 @@ class Server:
         self.__packet_received = 0
         self.__socket.settimeout(None)
 
-    def __handle_post_request(self, client_address: address_type):
-        pass
+    def __handle_post_request(self, message: str, client_address: address_type):
+        print(f"message: {message}")
+        if message.startswith("PUTTING"):
+            file_name = message.split(" ")[-1]
+            dirname = os.path.dirname(__file__)
+            file_path = os.path.join(dirname, "posted_files", file_name)
+
+            response = message
+
+            segments = []
+
+            if len(response.encode()) > 256:
+                    segments = TransportSegment.divide_data(
+                        256, response)
+
+            else:
+                segments = [str(TransportSegment(1, response))]
+
+                index = 0
+                while self.__number_of_retries > 0:
+                    print(f"Sending segment {index}...")
+                    self.__send(segments[index],
+                                client_address[0], client_address[1])
+                    self.__packet_sent += 1
+
+                    try:
+                        self.__socket.settimeout(10)
+                        message, _ = self.__receive(1024)
+                        ts = TransportSegment.read_json(message)
+
+                        if ts.verify_payload():
+                            self.__packet_received += 1
+                            print(
+                                f"Received Ack Segment {ts.get_segment_number() - 1}...")
+                            if index < len(segments) - 1:
+                                index = ts.get_segment_number()
+                            else:
+                                print("All the packet have been sent...")
+                                fin_message = TransportSegment(
+                                    index + 1, SegmentAckMessage.FIN.value)
+                                self.__send(
+                                    str(fin_message), client_address[0], client_address[1])
+                                break
+                        else:
+                            print("Checksum do not match, ignoring message...")
+
+                    except Exception as e:
+                        print(e.__cause__)
+                        self.__number_of_retries -= 1
+
+        print(f"Disconnect from {client_address}...")
+        print(
+            f"Packet Sent: {self.__packet_sent}, Packet Received: {self.__packet_received}")
+        print(
+            f"Packet Loss: {(abs(self.__packet_sent + 1 - self.__packet_received)/(self.__packet_sent + self.__packet_received))*100}%")
+        self.__packet_sent = 0
+        self.__packet_received = 0
+        self.__socket.settimeout(None)
 
     def start(self):
         """
@@ -200,69 +256,9 @@ class Server:
                         self.__handle_get_request(
                             ts.get_data(), client_address)
 
-                    if ts.get_data() == RequestMessage.POST.value:
-                        pass
-            # try:
-
-            #     # message is the data received, it contains the actual message, client_address is the address of the client in a tuple (ip, port)
-            #     print(f"Connection from {client_address}")
-
-            #     print(
-            #         f"Received {len(message)} bytes from :\n{client_address}")
-
-            #     # we need to decode the data to be able to read it as a string
-            #     # can be read as "I want (this specific html file) easy syntax to read
-            #     if message.startswith("I WANT"):
-
-            #         # getting and storing the file names into variables to create the paths
-            #         file_name = message.split(" ")[-1]
-            #         file_path = "./get_files/"
-
-            #         # check if the requested file exists in the get_files folder
-            #         is_existing = os.path.exists(file_path + file_name)
-            #         if is_existing:
-            #             f = open(rf"{file_path + file_name}")
-            #             response = f.read(1024).encode()
-            #             f.close()
-
-            #         else:
-            #             print("FILE DOES NOT EXIST! >:(")
-            #             response = "NOTOK".encode()
-
-            #     # makeshift post method to send data to the server
-            #     elif message.startswith("PUTTING"):
-
-            #         file_path = "./posted_files/"
-
-            #         # split the data into parts to get the body of the message
-            #         data_parts = message.split("\n")
-            #         # takes the last part of the message containing the message after the method (PUTTING !blahblahblah!)
-            #         data_body = data_parts[-1]
-
-            #         # creating the file where the posted file will be stored
-            #         posted_file_name = "posted_requestdata.txt"
-
-            #         # write the data to a file to be read by the client
-            #         with open(f"{file_path + posted_file_name}", "a") as f:
-            #             f.write(f"{data_body}\n")
-            #             f.close()
-
-            #         # let the user know hey its ok ur safe ur file is with me now
-            #         print("JSON FILE POSTED AND PUTTED!!! :D")
-            #         response = "OK".encode()
-
-            #     elif message.startswith("TALKING"):
-            #         # if the message is not a get or post method, it will be instead seen as p2p messaging
-            #         print(message)
-            #         response = input("Enter response: ").encode()
-
-            #     else:
-            #         print(message, "FAILED TO SEND :C")
-            #         response = "NOTOK".encode()
-
-            #     # send the response to the client
-            # except Exception as e:
-            #     print(f"Rejected because {e}")
+                    if ts.get_data().startswith(RequestMessage.POST.value):
+                        self.__handle_post_request(
+                            ts.get_data(), client_address)
 
     def close(self):
         """Closing the socket connection."""
