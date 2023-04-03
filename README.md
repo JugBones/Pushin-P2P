@@ -65,15 +65,44 @@ The program uses Python Socket and Multiprocessing libraries to handle incoming 
 
 ## Sequence Diagram
 
+
+### GET Method
+a) Successful Process
+![GET Method](sequence_diagrams/GET.png)
+
+b) Failed Handshake (Use of Timer to prevent Package Loss)
+![GET with Timer](sequence_diagrams/GET_Timer.png)
+
+c) Failed Response
+![GET with Timer (Package)](sequence_diagrams/GET_TimerPackage.png)
+
+d) Requested File Doesn't Exist
+![GET with No File](sequence_diagrams/GET_NoFile.png)
+
+### POST Method
+a) Successful Process
+![POST Method](sequence_diagrams/POST.png)
+
+b) Failed Package
+![Post with Timer](sequence_diagrams/POST_Timer.png)
+
+### Messaging Method
+a) Successful Process
+![Message Method](sequence_diagrams/Message.png)
+
+b) Failed Message
+![Message Timer](sequence_diagrams/Message_Timer.png)
+
 ## Testing
+
 ### Requirements
 - Python 3.x installed
 - Two machines (or VMs) with different IP addresses (can be obtained using the `ifcongif`/`ipconfig` command).
 
 In order to test the protocol, two end-systems are needed. This can be done in the form of multiple VMs or two operating systems for both receiving and sending files.
 
-## Downloading the Program
-### via Git
+### Installing
+#### via Git
 1. Initialize Git
 ```bash
 git init
@@ -82,12 +111,19 @@ git init
 ```bash
 git clone https://github.com/JugBones/Pushin-P2P.git
 ```
-### via Github Desktop
+#### via Github Desktop
 1. Open Github Desktop
 2. Clone repository using URL (https://github.com/JugBones/Pushin-P2P) & select the local path folder
 3. Click the 'Clone' button
 
-## Running the program
+#### via ZIP
+1. Click the green button with the text "Code"
+2. Click the most bottom option "Download ZIP"
+3. Save the ZIP file
+4. Extract the ZIP file
+
+
+### Running the program
 1. Navigate to the repository and run the program
 ```bash
 python.py
