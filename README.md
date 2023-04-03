@@ -87,6 +87,13 @@ git clone https://github.com/JugBones/Pushin-P2P.git
 2. Clone repository using URL (https://github.com/JugBones/Pushin-P2P) & select the local path folder
 3. Click the 'Clone' button
 
+### via ZIP
+1. Click the green button with the text "Code"
+2. Click the most bottom option "Download ZIP"
+3. Save the ZIP file
+4. Extract the ZIP file
+
+
 ## Running the program
 1. Navigate to the repository and run the program
 ```bash
