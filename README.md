@@ -65,7 +65,36 @@ The program uses Python Socket and Multiprocessing libraries to handle incoming 
 
 ## Sequence Diagram
 
+
+### GET Method
+a) Successful Process
+![GET Method](sequence_diagrams/GET.png)
+
+b) Failed Handshake (Use of Timer to prevent Package Loss)
+![GET with Timer](sequence_diagrams/GET_Timer.png)
+
+c) Failed Response
+![GET with Timer (Package)](sequence_diagrams/GET_TimerPackage.png)
+
+d) Requested File Doesn't Exist
+![GET with No File](sequence_diagrams/GET_NoFile.png)
+
+### POST Method
+a) Successful Process
+![POST Method](sequence_diagrams/POST.png)
+
+b) Failed Package
+![Post with Timer](sequence_diagrams/POST_Timer.png)
+
+### Messaging Method
+a) Successful Process
+![Message Method](sequence_diagrams/Message.png)
+
+b) Failed Message
+![Message Timer](sequence_diagrams/Message_Timer.png)
+
 ## Testing
+
 ### Requirements
 - Python 3.x installed
 - Two machines (or VMs) with different IP addresses (can be obtained using the `ifcongif`/`ipconfig` command).
