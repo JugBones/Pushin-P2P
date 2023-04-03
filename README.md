@@ -65,6 +65,9 @@ The program uses Python Socket and Multiprocessing libraries to handle incoming 
 
 ## Sequence Diagram
 
+Note that the labels used in the diagrams below are *CLIENT* and *SERVER*. However, the protocol is still **PEER TO PEER**.
+
+The terms *CLIENT* and *SERVER* are only used to display which **PEER** is on the recieving and sending end more clearly.
 
 ### GET Method
 a) Successful Process
