@@ -89,13 +89,6 @@ a) Successful Process
 b) Failed Package
 ![Post with Timer](sequence_diagrams/POST_Timer.png)
 
-### Messaging Method
-a) Successful Process
-![Message Method](sequence_diagrams/Message.png)
-
-b) Failed Message
-![Message Timer](sequence_diagrams/Message_Timer.png)
-
 ## Testing
 
 ### Requirements
