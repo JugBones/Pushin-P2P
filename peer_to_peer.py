@@ -27,7 +27,7 @@ class PeerToPeer:
 
     def start(self):
         """
-        Start the server instance, while also sends request if user input destination IP address, Port and message. 
+        Start the server instance, while also sends request if user input destination IP address, Port and message.
         """
         self.__server_process.start()
 
@@ -35,105 +35,106 @@ class PeerToPeer:
         is_started = True
 
         while is_started:
-            try:
-                connection_established = False
-                while not connection_established:
-                    print(8*"-------")
-                    destination_ip = input("Enter destination IP: ")
-                    destination_port = int(input("Enter destination port: "))
-
-                # Three-way UDP handshake
-                    self.__client = Client()
-                    connection_established = self.__client.request_handshake(
-                        destination_ip, destination_port)
-
-                # self.client.send("SYN", destination_ip, destination_port)
-                # response, addr = self.client.receive()
-                # if response == "SYN-ACK":
-                #     self.client.send("ACK", destination_ip, destination_port)
-                #     print("UDP Handshake complete!")
-                # else:
-                #     print("UDP Handshake failed!")
-                #     continue
-
+            # try:
+            connection_established = False
+            while not connection_established:
                 print(8*"-------")
-                cmd = input(
-                    '\nEnter "get", "msg" or "post" command (or "exit" to quit): \n')
+                destination_ip = input("Enter destination IP: ")
+                destination_port = int(input("Enter destination port: "))
 
-                # message functionality is bugged
-                if cmd == 'msg':
-                    message = input("Enter message: ")
-                    self.__client.send(str(TransportSegment(1, ("TALKING " + message)),
-                                           destination_ip, int(self.__server_port)))
-                    self.__client.receive()
-                    self.__client.close()
+            # Three-way UDP handshake
+                self.__client = Client()
+                connection_established = self.__client.request_handshake(
+                    destination_ip, destination_port)
 
-                if cmd == 'get':
-                    print("==========GET==========")
-                    query = input("What do you want ?: ")
-                    if random.random() < 0.2:
-                        print("YOU DROPPED A PACKET >:(")
-                    else:
-                        self.__client.send(
-                            ("I WANT " + query), destination_ip, destination_port)
+            # self.client.send("SYN", destination_ip, destination_port)
+            # response, addr = self.client.receive()
+            # if response == "SYN-ACK":
+            #     self.client.send("ACK", destination_ip, destination_port)
+            #     print("UDP Handshake complete!")
+            # else:
+            #     print("UDP Handshake failed!")
+            #     continue
 
-                    # receives 1024 bytes in socketserver
+            print(8*"-------")
+            cmd = input(
+                '\nEnter "get", "msg" or "post" command (or "exit" to quit): \n')
 
-                    # #boolean to check if the get process is still running
-                    get_in_process = True
+            # message functionality is bugged
+            if cmd == 'msg':
+                message = input("Enter message: ")
+                self.__client.send(str(TransportSegment(1, ("TALKING " + message)),
+                                       destination_ip, int(self.__server_port)))
+                self.__client.receive()
+                self.__client.close()
 
-                    while get_in_process:
-                        timeout = 5
-                        data, addr = self.__client.receive()
-                        if data:
-                            file_name = data.decode().split(" ")[-1]
-                            print("File name:", file_name)
+            if cmd == 'get':
+                self.__client.get(destination_ip, destination_port)
+                continue
+                # query = input("What do you want ?: ")
+                # if random.random() < 0.2:
+                #     print("YOU DROPPED A PACKET >:(")
+                # else:
+                #     self.__client.send(
+                #         ("I WANT " + query), destination_ip, destination_port)
 
-                        # boolean to check if the data to get still exists in this process
-                        data_exists = True
+                # receives 1024 bytes in socketserver
 
-                        while data_exists:
-                            # file object uses fileno(), since on Windows, select.select won't work unless it has a fileno() method
-                            f = open("./get_files/" + file_name, 'rb')
-                            ready = select.select(
-                                [f.fileno()], [], [], timeout)
-                            if ready[0]:
-                                data, addr = self.__client.receive()
-                                received_file_name = "received_" + file_name
-                                with open(f"./received_files/" + received_file_name, "a") as f:
-                                    # writing to the new html file and decoding the data
-                                    f.write(f"{data.decode()}\n")
-                                    f.close()
-                                    print("HTML FILE GOT AND SENT!!!")
-                                    get_in_process = False
-                                    data_exists = False
+                # #boolean to check if the get process is still running
+                # get_in_process = True
 
-                            else:
-                                print("%s Finish!", file_name)
-                                f.close()
-                                get_in_process = False
-                                data_exists = False
-                            continue
-                # Post method
-                if cmd == 'post':
-                    print("==========POST==========")
-                    hd = input("Enter head of message: ")
-                    msg = input("Enter content of the message: ")
-                    payload = json.dumps({"head": hd, "message": msg})
-                    headers = '{"Content-Type":"application/json"}'
-                    # no need for decoding already decoded :)
-                    if random.random() < 0.2:
-                        print("YOU DROPPED A PACKET >:(")
-                    else:
-                        self.__client.send(
-                            ("PUTTING" + " \n " + str(headers) + " \n " + str(payload)), destination_ip, destination_port)
-                        continue
+                # while get_in_process:
+                #     timeout = 5
+                #     data, addr = self.__client.receive()
+                #     if data:
+                #         file_name = data.decode().split(" ")[-1]
+                #         print("File name:", file_name)
 
-                elif cmd == 'exit':
-                    is_started = False
+                #     # boolean to check if the data to get still exists in this process
+                #     data_exists = True
+
+                #     while data_exists:
+                #         # file object uses fileno(), since on Windows, select.select won't work unless it has a fileno() method
+                #         f = open("./get_files/" + file_name, 'rb')
+                #         ready = select.select(
+                #             [f.fileno()], [], [], timeout)
+                #         if ready[0]:
+                #             data, addr = self.__client.receive()
+                #             received_file_name = "received_" + file_name
+                #             with open(f"./received_files/" + received_file_name, "a") as f:
+                #                 # writing to the new html file and decoding the data
+                #                 f.write(f"{data.decode()}\n")
+                #                 f.close()
+                #                 print("HTML FILE GOT AND SENT!!!")
+                #                 get_in_process = False
+                #                 data_exists = False
+
+                #         else:
+                #             print("%s Finish!", file_name)
+                #             f.close()
+                #             get_in_process = False
+                #             data_exists = False
+                #         continue
+            # Post method
+            if cmd == 'post':
+                print("==========POST==========")
+                hd = input("Enter head of message: ")
+                msg = input("Enter content of the message: ")
+                payload = json.dumps({"head": hd, "message": msg})
+                headers = '{"Content-Type":"application/json"}'
+                # no need for decoding already decoded :)
+                if random.random() < 0.2:
+                    print("YOU DROPPED A PACKET >:(")
                 else:
-                    print("INVALID STATEMENT!")
+                    self.__client.send(
+                        ("PUTTING" + " \n " + str(headers) + " \n " + str(payload)), destination_ip, destination_port)
                     continue
 
-            except Exception as e:
-                print(e)
+            elif cmd == 'exit':
+                is_started = False
+            else:
+                print("INVALID STATEMENT!")
+                continue
+
+            # except Exception as e:
+            #     print(e)

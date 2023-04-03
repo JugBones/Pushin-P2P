@@ -10,6 +10,17 @@ class HandshakeMessage(Enum):
     ACK = "I received the message that you are there."
 
 
+class RequestMessage(Enum):
+    GET = "I WANT "
+    POST = "PUTTING "
+
+
+class SegmentAckMessage(Enum):
+    ACK = "I received the segment"
+    NOT_FOUND = "NOTOK"
+    FIN = "I sent all segments"
+
+
 class TransportSegment:
     """
     A class represent the header and payload. 
@@ -32,19 +43,22 @@ class TransportSegment:
         Returns:
             Package: Package class instance.
         """
-        _segment = json.loads(package)
-        sequence_number = _segment["Segment-Number"]
-        checksum = _segment["Checksum"]
-        data = _segment["Data"]
-        return TransportSegment(sequence_number, data, checksum=checksum)
+        try:
+            _segment = json.loads(package)
+            sequence_number = _segment["Segment-Number"]
+            checksum = _segment["Checksum"]
+            data = _segment["Data"]
+            return TransportSegment(sequence_number, data, checksum=checksum)
+        except:
+            return
 
     def divide_data(max_segment_size: int, data: str) -> List[str]:
-        chunks = [data[i:i+max_segment_size]
+        chunks = [data.encode()[i:i+max_segment_size].decode()
                   for i in range(0, len(data), max_segment_size)]
 
-        return [str(TransportSegment(index, chunk)) for index, chunk in enumerate(chunks)]
+        return [str(TransportSegment(index + 1, chunk)) for index, chunk in enumerate(chunks)]
 
-    def reassemble_data(chunks: List) -> str:
+    def reassemble_data(chunks: List[str]) -> str:
         li = [TransportSegment.read_json(chunk) for chunk in chunks]
         data = sorted(li, key=lambda x: x.__segment_number)
 
@@ -62,6 +76,9 @@ class TransportSegment:
 
     def get_data(self):
         return self.__data
+
+    def get_segment_number(self):
+        return self.__segment_number
 
     def __str__(self) -> str:
         # To string method, str(<Header instance>) or print(<Header instance>)
