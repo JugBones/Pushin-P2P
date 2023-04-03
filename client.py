@@ -183,7 +183,11 @@ class Client:
                 continue
 
             if m.verify_payload():
-                if m.get_data() != SegmentAckMessage.FIN.value:
+                if m.get_data() == SegmentAckMessage.NOT_FOUND.value:
+                    print("File Does not exist!")
+                    get_in_process = False
+
+                elif m.get_data() != SegmentAckMessage.FIN.value:
                     print(f"Received Segment {m.get_segment_number()}...")
                     self.__segments.append(str(m))
                     ts = TransportSegment(
@@ -199,22 +203,11 @@ class Client:
                     print(self.__segments)
                     s = TransportSegment.reassemble_data(self.__segments)
                     self.send(str(ts), ip_address, port)
-                    print("Writing file to local disk...")
                     dirname = os.path.dirname(__file__)
+                    print(
+                        f"Writing file to {os.path.join(dirname, 'get_files', query)}...")
                     with open(os.path.join(dirname, "get_files", query), "w") as f:
                         f.write(s)
-
-                elif m.get_data() != SegmentAckMessage.NOT_FOUND.value:
-                    get_in_process = False
-                    print("File not found!")
-
-                else:
-                    print("All segments received...")
-                    print(f"Saving to /received_files/{query}")
-                    s = TransportSegment.reassemble_data(self.__segments)
-                    with open(f"/received_files/{query}", "rb") as f:
-                        f.write(s)
-                    get_in_process = False
 
         print("Closing socket...")
         self.close()
