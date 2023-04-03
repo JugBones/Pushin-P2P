@@ -182,7 +182,6 @@ class Client:
                     get_in_process = False
                     ts = TransportSegment(
                         m.get_segment_number(), SegmentAckMessage.FIN.value)
-                    print(self.__segments)
                     s = TransportSegment.reassemble_data(self.__segments)
                     self.send(str(ts), ip_address, port)
                     self.__packet_sent += 1
