@@ -53,7 +53,6 @@ The basic flow of the P2P protocol is as follows:
 - Initialization: When a user selects a method (GET, POST, or default) the program creates a new socket and sends a request to the target peer, identified by its IP address and port number. UDP socket and port number bind
 - The target peer receives the request and processes it according to the selected method.
 - Once the data is received by the requesting peer, it is displayed on the console.
-- The program handles packet loss in the channel by … 
 
 The program uses Python Socket and Multiprocessing libraries to handle incoming and outgoing connections within a single file.
 
@@ -61,7 +60,6 @@ The program uses Python Socket and Multiprocessing libraries to handle incoming 
 
 - GET: The target peer reads the requested HTML file from its storage medium and sends it back to the requesting peer
 - POST: The target peer stores the received JSON file in its storage medium and sends and acknowledgment message back to the requesting peer
-- If neither GET or POST is selected, then the default method is a message where the requesting peer receives a message and is prompted to input a message to be sent back to the target peer.
 
 ## Sequence Diagram
 
@@ -107,6 +105,20 @@ git init
 ```bash
 git clone https://github.com/JugBones/Pushin-P2P.git
 ```
+4. Navigate folder
+```bash
+cd Pushin-P2P
+```
+
+3. Install requirements
+```bash
+pip install -r requirements.txt
+```
+4. Run program
+```bash
+python main.py
+```
+
 #### via Github Desktop
 1. Open Github Desktop
 2. Clone repository using URL (https://github.com/JugBones/Pushin-P2P) & select the local path folder
@@ -118,15 +130,6 @@ git clone https://github.com/JugBones/Pushin-P2P.git
 3. Save the ZIP file
 4. Extract the ZIP file
 
-
-### Running the program
-1. Navigate to the repository and run the program
-```bash
-python.py
-```
-2. Enter your IP address and port number for the socket
-
-3. Select a method by typing GET, POST or message.
 
 ## Demonstration/Tutorial
 In order to get better understanding of this project, we provide the video demonstration of the project in this following link :
