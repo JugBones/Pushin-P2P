@@ -134,7 +134,8 @@ python main.py
 ## Demonstration/Tutorial
 In order to get better understanding of this project, we provide the video demonstration of the project in this following link :
 
-- Link : 
+- Youtube link : https://youtu.be/HQVNWaDH8xk
+- Google drive link : https://drive.google.com/file/d/1MAV0PHndABRyvDZYDPRxzwo_7k_PrytL/view?usp=sharing
 
 Enjoy and happy learning !
 
