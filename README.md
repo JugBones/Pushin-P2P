@@ -1,4 +1,4 @@
-# pushin p2p
+# Pushin P2P
 
 <h3 align="center">
 Hi there, We're L4BC and this is our Computer Networks project</a> 👋
@@ -137,7 +137,6 @@ In order to get better understanding of this project, we provide the video demon
 - Youtube link : https://youtu.be/HQVNWaDH8xk
 - Google drive link : https://drive.google.com/file/d/1MAV0PHndABRyvDZYDPRxzwo_7k_PrytL/view?usp=sharing
 
-Enjoy and happy learning !
 
 ## Contribute
 We welcome contributions from the community to help improve our project and expand its capabilities!
